@@ -17,6 +17,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
@@ -29,7 +30,7 @@ public class RPGPlayer implements Listener, SpellCaster, MagicAffectable {
     private SpellCast spellCast = null;
     private int mana = 0;
     private int health;
-    private int secondTicks = 0;
+    private int ticks = 0;
     private String actionBarCenter = "";
 
     public RPGPlayer(Player player, SpigotPlugin plugin) {
@@ -48,13 +49,13 @@ public class RPGPlayer implements Listener, SpellCaster, MagicAffectable {
     }
 
     public void tick() {
-        secondTicks++;
-        if (secondTicks >= 20) {
-            secondTicks = 0;
-        }
-        if (secondTicks % 4 == 0) {
-            setHealth(health + 1);
+        ticks++;
+        if (ticks % 8 == 0) {
             mana = Math.clamp(mana + 1, 0, getMaxMana());
+        }
+        if(ticks % 80 == 0) {
+            int regenAmount = (int) Math.round(((float)getMaxMana()/60) * Math.exp(-(float)health/1000)) + 3;
+            setHealth(health + regenAmount);
         }
         sendDefaultActionBar();
         if (spellCast != null) {
@@ -67,7 +68,6 @@ public class RPGPlayer implements Listener, SpellCaster, MagicAffectable {
         int centerLength = actionBarCenter.length();
         String paddedCenter = actionBarCenter;
         int neededSpaces = middleSize - centerLength;
-        plugin.getLogger().info(String.valueOf(neededSpaces));
         if(neededSpaces > 0) {
             paddedCenter = Strings.repeat(" ", Math.ceilDiv(neededSpaces, 2)) + actionBarCenter + Strings.repeat(" ", Math.floorDiv(neededSpaces, 2));
         }
@@ -133,7 +133,7 @@ public class RPGPlayer implements Listener, SpellCaster, MagicAffectable {
                 if (success) {
                     wand.setLoadedSpell(spellType);
                     player.playSound(player, Sound.ENTITY_BREEZE_INHALE, 10, 1);
-                    player.sendMessage(ChatColor.GREEN + "Your wand is now charged with " + spellType.getColoredName());
+//                    player.sendMessage(ChatColor.GREEN + "Your wand is now charged with " + spellType.getColoredName());
                 }
             }
             cancelChargingSpell();
@@ -306,6 +306,15 @@ public class RPGPlayer implements Listener, SpellCaster, MagicAffectable {
             ItemStack cursorItem = event.getCursor();
             if (cursorItem != null) {
                 clearSpell(cursorItem);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onNaturalRegen(EntityRegainHealthEvent event) {
+        if(event.getEntity().equals(player)) {
+            if(event.getRegainReason().equals(EntityRegainHealthEvent.RegainReason.SATIATED) || event.getRegainReason().equals(EntityRegainHealthEvent.RegainReason.REGEN)) {
+                event.setCancelled(true);
             }
         }
     }
