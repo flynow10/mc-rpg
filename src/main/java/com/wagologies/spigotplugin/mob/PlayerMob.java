@@ -71,6 +71,20 @@ public abstract class PlayerMob extends AbstractMob implements SpellCaster {
         }
     }
 
+    @Override
+    public Entity getEntity() {
+        return npc.getEntity();
+    }
+
+    @Override
+    public boolean damage(int damage) {
+        boolean isDead = super.damage(damage);
+        if(!isDead) {
+            updateName();
+        }
+        return isDead;
+    }
+
     public abstract String getSkinTexture();
     public abstract String getSkinSignature();
 
@@ -86,11 +100,8 @@ public abstract class PlayerMob extends AbstractMob implements SpellCaster {
             return;
         }
 
-        boolean isDead = damage(damageEvent.getDamage());
-        event.setDamage(isDead ? ((Damageable)event.getNPC().getEntity()).getHealth() : 0);
-        if(!isDead) {
-            updateName();
-        }
+        damage(damageEvent.getDamage());
+        event.setDamage(0);
     }
 
     @EventHandler
@@ -106,6 +117,7 @@ public abstract class PlayerMob extends AbstractMob implements SpellCaster {
     @Override
     public void onDeath() {
         super.onDeath();
+        ((Damageable) npc.getEntity()).setHealth(0);
         if(tickTask != null) {
             Bukkit.getScheduler().cancelTask(tickTask);
         }
@@ -141,15 +153,4 @@ public abstract class PlayerMob extends AbstractMob implements SpellCaster {
     public Entity getCastingEntity() {
         return npc.getEntity();
     }
-
-    //    @EventHandler
-//    public void onPlayerMove(PlayerMoveEvent event) {
-//        Player player = event.getPlayer();
-//        if(player.equals(targetPlayer)) {
-//            if(player.getLocation().distanceSquared(npc.getStoredLocation()) > 4) {
-//                Location targetLocation = npc.getStoredLocation().subtract(player.getLocation()).toVector().normalize().multiply(3).toLocation(player.getWorld()).add(player.getLocation());
-//                npc.getNavigator().setTarget(targetLocation);
-//            }
-//        }
-//    }
 }

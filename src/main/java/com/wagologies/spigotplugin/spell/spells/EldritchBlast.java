@@ -1,14 +1,14 @@
 package com.wagologies.spigotplugin.spell.spells;
 
 import com.wagologies.spigotplugin.event.SpellHitEntityEvent;
-import com.wagologies.spigotplugin.item.Wand;
 import com.wagologies.spigotplugin.spell.BaseSpell;
+import com.wagologies.spigotplugin.spell.MagicAffectable;
 import com.wagologies.spigotplugin.spell.SpellCaster;
 import com.wagologies.spigotplugin.spell.SpellManager;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
@@ -39,15 +39,36 @@ public class EldritchBlast extends BaseSpell {
         position.add(direction.clone().multiply(BoltSpeed));
         Location boltLocation = position.toLocation(spellWorld);
         Particle.DustOptions dustOptions = new Particle.DustOptions(Color.fromRGB(0x52c7de), 2f);
-        spellWorld.spawnParticle(Particle.REDSTONE, boltLocation, 1, 0.1, 0.1, 0.1,0, dustOptions, true);
+        spellWorld.spawnParticle(Particle.REDSTONE, boltLocation, 10, 0.1, 0.1, 0.1,0, dustOptions, true);
         if(didHitSomething(boltLocation)) {
             Entity entity = hitEntity(boltLocation);
             if(entity != null) {
                 SpellHitEntityEvent event = new SpellHitEntityEvent(this, entity);
                 Bukkit.getPluginManager().callEvent(event);
+                if(!event.isCancelled()) {
+                    MagicAffectable magicAffectedEntity = findMagicAffectedEntity(entity);
+                    if(magicAffectedEntity != null) {
+                        onHitEntity(magicAffectedEntity);
+                    }
+                }
             }
             endSpell();
         }
+    }
+
+    public void onHitEntity(MagicAffectable magicAffectable) {
+        Entity entity = magicAffectable.getEntity();
+        if(entity instanceof LivingEntity livingEntity) {
+            livingEntity.playHurtAnimation(0);
+            Sound hurtSound = livingEntity.getHurtSound();
+            if(hurtSound != null) {
+                entity.getWorld().playSound(livingEntity, hurtSound, 1, 1);
+            }
+        }
+        Vector direction = this.getDirection().clone().normalize();
+        direction.setY(0.4);
+        entity.setVelocity(direction);
+        magicAffectable.damage(5);
     }
 
     @Override

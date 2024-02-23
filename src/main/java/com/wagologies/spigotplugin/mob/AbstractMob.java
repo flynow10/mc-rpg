@@ -3,6 +3,7 @@ package com.wagologies.spigotplugin.mob;
 import com.wagologies.spigotplugin.event.DamageMobByPlayer;
 import com.wagologies.spigotplugin.event.DamageMobEvent;
 import com.wagologies.spigotplugin.player.RPGPlayer;
+import com.wagologies.spigotplugin.spell.MagicAffectable;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;

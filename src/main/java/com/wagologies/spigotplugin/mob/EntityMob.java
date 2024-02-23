@@ -55,6 +55,13 @@ public abstract class EntityMob extends AbstractMob {
 
     public abstract Entity createBaseEntity(World world, Location location);
 
+    @Override
+    public boolean damage(int damage) {
+        boolean isDead = super.damage(damage);
+        updateName();
+        return isDead;
+    }
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamage(EntityDamageEvent event) {
         Entity entity = event.getEntity();
@@ -71,28 +78,12 @@ public abstract class EntityMob extends AbstractMob {
 
         event.setDamage(0);
         damage(damageEvent.getDamage());
-        updateName();
+
     }
 
-    @EventHandler
-    public void onSpellHit(SpellHitEntityEvent event) {
-        if(event.getEntity().equals(baseEntity)) {
-            BaseSpell spell = event.getSpell();
-            if(spell instanceof EldritchBlast blast) {
-                if(baseEntity instanceof LivingEntity livingEntity) {
-                    livingEntity.playHurtAnimation(0);
-                    Sound hurtSound = livingEntity.getHurtSound();
-                    if(hurtSound != null) {
-                        baseEntity.getWorld().playSound(livingEntity, hurtSound, 1, 1);
-                    }
-                }
-                Vector direction = blast.getDirection().clone().normalize();
-                direction.setY(0.4);
-                baseEntity.setVelocity(direction);
-                damage(5);
-                updateName();
-            }
-        }
+    @Override
+    public Entity getEntity() {
+        return baseEntity;
     }
 
     @EventHandler

@@ -8,12 +8,10 @@ import com.wagologies.spigotplugin.item.CustomItem;
 import com.wagologies.spigotplugin.item.ItemType;
 import com.wagologies.spigotplugin.item.MeleeWeapon;
 import com.wagologies.spigotplugin.item.Wand;
-import com.wagologies.spigotplugin.spell.BaseSpell;
-import com.wagologies.spigotplugin.spell.SpellCast;
-import com.wagologies.spigotplugin.spell.SpellCaster;
-import com.wagologies.spigotplugin.spell.SpellType;
+import com.wagologies.spigotplugin.spell.*;
 import com.wagologies.spigotplugin.spell.spells.EldritchBlast;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -30,16 +28,17 @@ import org.bukkit.util.Vector;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class RPGPlayer implements Listener, SpellCaster {
+public class RPGPlayer implements Listener, SpellCaster, MagicAffectable {
     private final Player player;
     private final SpigotPlugin plugin;
     private SpellCast spellCast = null;
-    private int mana;
+    private int mana = 0;
+    private int health;
     private int secondTicks = 0;
     public RPGPlayer(Player player, SpigotPlugin plugin) {
         this.player = player;
         this.plugin = plugin;
-
+        health = getMaxHealth();
         plugin.getServer().getPluginManager().registerEvents(this, this.plugin);
     }
 
@@ -57,6 +56,7 @@ public class RPGPlayer implements Listener, SpellCaster {
             secondTicks = 0;
         }
         if(secondTicks % 4 == 0) {
+            setHealth(health + 1);
             mana = Math.clamp(mana + 1, 0, getMaxMana());
             if(secondTicks != 0) {
                 sendActionBar();
@@ -71,12 +71,18 @@ public class RPGPlayer implements Listener, SpellCaster {
     }
 
     public void sendActionBar() {
-        String manaString = ChatColor.BLUE.toString() + mana + " / " + getMaxMana();
-        plugin.getActionBar().sendActionBar(player, manaString);
+        String actionBarString = ChatColor.RED.toString() + health + " / " + getMaxHealth() + "   " + ChatColor.BLUE + mana + " / " + getMaxMana();
+        plugin.getActionBar().sendActionBar(player, actionBarString);
     }
 
     public int getMaxMana() {
         return 100;
+    }
+    public int getMaxHealth() { return 100; }
+
+    public void setHealth(int newHealth) {
+        health = Math.clamp(newHealth, 0, getMaxHealth());
+        player.setHealth(((double) health / getMaxHealth()) * 20);
     }
 
     public boolean canChargeSpell() {
@@ -147,22 +153,15 @@ public class RPGPlayer implements Listener, SpellCaster {
         wand.setLoadedSpell(null);
     }
 
-    @EventHandler
-    public void onSpellHit(SpellHitEntityEvent event) {
-        if(event.getEntity().equals(player)) {
-            BaseSpell spell = event.getSpell();
-            if(spell instanceof EldritchBlast blast) {
-                player.playHurtAnimation(0);
-                Sound hurtSound = player.getHurtSound();
-                if(hurtSound != null) {
-                    player.getWorld().playSound(player, hurtSound, 1, 1);
-                }
-                Vector direction = blast.getDirection().clone().normalize();
-                direction.setY(0.4);
-                player.setVelocity(direction);
-                player.damage(5);
-            }
-        }
+    @Override
+    public boolean damage(int damage) {
+        setHealth(health - damage);
+        return health == 0;
+    }
+
+    @Override
+    public Entity getEntity() {
+        return player;
     }
 
     @EventHandler

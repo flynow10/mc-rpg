@@ -16,6 +16,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -41,6 +44,7 @@ public class ItemHelper {
             throw new RuntimeException("Cannot dye non leather armor!");
         }
         LeatherArmorMeta armorMeta = (LeatherArmorMeta) itemStack.getItemMeta();
+        assert armorMeta != null;
         armorMeta.setColor(color);
         itemStack.setItemMeta(armorMeta);
     }
@@ -55,8 +59,15 @@ public class ItemHelper {
         propertyMap.put("textures", new Property("textures", new String(encodedData)));
         ItemStack head = new ItemStack(Material.PLAYER_HEAD, 1);
         SkullMeta headMeta = (SkullMeta) head.getItemMeta();
-        Class<?> headMetaClass = headMeta.getClass();
-        Reflections.getField(headMetaClass, "profile", GameProfile.class, 0).set(headMeta, profile);
+        assert headMeta != null;
+        Method metaSetProfileMethod;
+        try {
+            metaSetProfileMethod = headMeta.getClass().getDeclaredMethod("setProfile", GameProfile.class);
+            metaSetProfileMethod.setAccessible(true);
+            metaSetProfileMethod.invoke(headMeta, profile);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            return null;
+        }
         head.setItemMeta(headMeta);
         return head;
     }
