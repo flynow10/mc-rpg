@@ -1,7 +1,5 @@
 package com.wagologies.spigotplugin.utils;
 
-import com.wagologies.spigotplugin.mob.Kobold;
-
 import java.lang.reflect.Field;
 
 public class Reflections {

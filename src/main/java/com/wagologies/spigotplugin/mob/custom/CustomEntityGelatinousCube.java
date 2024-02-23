@@ -1,281 +1,231 @@
 package com.wagologies.spigotplugin.mob.custom;
 
-import com.google.common.base.Predicate;
-import net.minecraft.server.v1_8_R3.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.bukkit.craftbukkit.v1_8_R3.util.UnsafeList;
-import org.bukkit.event.entity.EntityTargetEvent;
+import net.minecraft.world.effect.MobEffectList;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityLiving;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.ai.attributes.GenericAttributes;
+import net.minecraft.world.entity.ai.control.ControllerMove;
+import net.minecraft.world.entity.ai.goal.PathfinderGoal;
+import net.minecraft.world.entity.ai.goal.target.PathfinderGoalNearestAttackableTarget;
+import net.minecraft.world.entity.animal.EntityIronGolem;
+import net.minecraft.world.entity.monster.EntitySlime;
+import net.minecraft.world.entity.player.EntityHuman;
+import net.minecraft.world.level.World;
+import org.bukkit.Location;
 
-import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.List;
+import java.util.EnumSet;
 
 public class CustomEntityGelatinousCube extends EntitySlime {
-    public CustomEntityGelatinousCube(World world) {
-        super(world);
-        this.setSize(7);
-        this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(0.2F + 0.1F * (float)3);
-        this.moveController = new ControllerMoveGelatinous(this);
-        try {
-            Field bField = PathfinderGoalSelector.class.getDeclaredField("b");
-            bField.setAccessible(true);
-            Field cField = PathfinderGoalSelector.class.getDeclaredField("c");
-            cField.setAccessible(true);
-            bField.set(goalSelector, new UnsafeList<PathfinderGoalSelector>());
-            bField.set(targetSelector, new UnsafeList<PathfinderGoalSelector>());
-            cField.set(goalSelector, new UnsafeList<PathfinderGoalSelector>());
-            cField.set(targetSelector, new UnsafeList<PathfinderGoalSelector>());
-        } catch (Exception exc) {
-            exc.printStackTrace();
-        }
-
-        this.goalSelector.a(1, new PathfinderGoalSlimeRandomJump(this));
-        this.goalSelector.a(2, new PathfinderGoalSlimeNearestPlayer(this));
-        this.goalSelector.a(3, new PathfinderGoalSlimeRandomDirection(this));
-        this.goalSelector.a(5, new PathfinderGoalSlimeIdle(this));
-        this.targetSelector.a(1, new PathfinderGoalTargetNearestRealPlayer(this));
+    public CustomEntityGelatinousCube(EntityTypes<? extends EntitySlime> entitytypes, World world) {
+        super(entitytypes, world);
+        this.bL = new GelatinousCubeController(this);
+        this.ai().a(world);
     }
 
-    static class PathfinderGoalTargetNearestRealPlayer extends PathfinderGoal {
-        private static final Logger a = LogManager.getLogger();
-        private EntityInsentient b;
-        private final Predicate<Entity> c;
-        private final PathfinderGoalNearestAttackableTarget.DistanceComparator d;
-        private EntityLiving e;
+    @Override
+    protected void B() {
+        this.bO.a(1, new PathfinderGoalSlimeRandomJump(this));
+        this.bO.a(2, new PathfinderGoalSlimeNearestPlayer(this));
+        this.bO.a(3, new PathfinderGoalSlimeRandomDirection(this));
+        this.bO.a(5, new PathfinderGoalSlimeIdle(this));
+        this.bP.a(1, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, 10, true, false, (entityliving) -> {
+            return Math.abs(entityliving.dt() - this.dt()) <= 4.0;
+        }));
+    }
 
-        public PathfinderGoalTargetNearestRealPlayer(EntityInsentient entityinsentient) {
-            this.b = entityinsentient;
-            if (entityinsentient instanceof EntityCreature) {
-                a.warn("Use NearestAttackableTargetGoal.class for PathfinerMob mobs!");
+    protected int A() {
+        return this.ag.a(20) + 10;
+    }
+
+    float getSoundPitch() {
+        float f = this.gg() ? 1.4F : 0.8F;
+        return ((this.ag.i() - this.ag.i()) * 0.2F + 1.0F) * f;
+    }
+
+    public void setPos(Location location) {
+        this.a_(location.getX(), location.getY(), location.getZ());
+    }
+
+    @Override
+    public void a(RemovalReason entity_removalreason) {
+        this.b(entity_removalreason);
+        this.bz.a();
+    }
+
+    private static class GelatinousCubeController extends ControllerMove {
+        private float yRot;
+        private int jumpDelay;
+        private final CustomEntityGelatinousCube slime;
+        private boolean isAggressive;
+
+        public GelatinousCubeController(CustomEntityGelatinousCube entitySlime) {
+            super(entitySlime);
+            this.slime = entitySlime;
+            this.yRot = 180.0F * entitySlime.dC() / 3.1415927F;
+        }
+
+        public void a(float f, boolean flag) {
+            this.yRot = f;
+            this.isAggressive = flag;
+        }
+
+        public void a(double d0) {
+            this.h = d0;
+            this.k = Operation.b;
+        }
+
+        public void a() {
+            this.d.r(this.a(this.d.dC(), this.yRot, 90.0F));
+            this.d.aW = this.d.dC();
+            this.d.aU = this.d.dC();
+            if (this.k != Operation.b) {
+                this.d.A(0.0F);
+            } else {
+                this.k = Operation.a;
+                if (this.d.aC()) {
+                    this.d.w((float)(this.h * this.d.b(GenericAttributes.m)));
+                    if (this.jumpDelay-- <= 0) {
+                        this.jumpDelay = this.slime.A();
+                        if (this.isAggressive) {
+                            this.jumpDelay /= 3;
+                        }
+
+                        if(this.isAggressive) {
+                            this.slime.M().a();
+                        }
+                        if (this.slime.gf() > 0) {
+                            this.slime.a(this.slime.ge(), this.slime.eW(), this.slime.getSoundPitch());
+                        }
+                    } else {
+                        this.slime.bk = 0.0F;
+                        this.slime.bm = 0.0F;
+                        this.d.w(0.0F);
+                    }
+                } else {
+                    this.d.w((float)(this.h * this.d.b(GenericAttributes.m)));
+                }
             }
 
-            this.c = new Predicate() {
-                public boolean a(Entity entity) {
-                    if (!(entity instanceof EntityHuman)) {
-                        return false;
-                    } else if (((EntityHuman)entity).abilities.isInvulnerable) {
-                        return false;
-                    } else if(entity.getBukkitEntity().hasMetadata("NPC")) {
-                        return false;
-                    } else {
-                        double d0 = PathfinderGoalTargetNearestRealPlayer.this.f();
-                        if (entity.isSneaking()) {
-                            d0 *= 0.800000011920929;
-                        }
+        }
+    }
 
-                        if (entity.isInvisible()) {
-                            float f = ((EntityHuman)entity).bY();
-                            if (f < 0.1F) {
-                                f = 0.1F;
-                            }
+    private static class PathfinderGoalSlimeIdle extends PathfinderGoal {
+        private final EntitySlime a;
 
-                            d0 *= (double)(0.7F * f);
-                        }
-
-                        return (double)entity.g(PathfinderGoalTargetNearestRealPlayer.this.b) > d0 ? false : PathfinderGoalTarget.a(PathfinderGoalTargetNearestRealPlayer.this.b, (EntityLiving)entity, false, true);
-                    }
-                }
-
-                public boolean apply(Object object) {
-                    return this.a((Entity)object);
-                }
-            };
-            this.d = new PathfinderGoalNearestAttackableTarget.DistanceComparator(entityinsentient);
+        public PathfinderGoalSlimeIdle(EntitySlime entityslime) {
+            this.a = entityslime;
+            this.a(EnumSet.of(Type.c, Type.a));
         }
 
         public boolean a() {
-            double d0 = this.f();
-            List list = this.b.world.a(EntityHuman.class, this.b.getBoundingBox().grow(d0, 4.0, d0), this.c);
-            Collections.sort(list, this.d);
-            if (list.isEmpty()) {
-                return false;
-            } else {
-                this.e = (EntityLiving)list.get(0);
-                return true;
+            return !this.a.bO();
+        }
+
+        public void e() {
+            ControllerMove controllermove = this.a.K();
+            if (controllermove instanceof GelatinousCubeController entityslime_controllermoveslime) {
+                entityslime_controllermoveslime.a(1.0);
             }
-        }
 
-        public boolean b() {
-            EntityLiving entityliving = this.b.getGoalTarget();
-            if (entityliving == null) {
-                return false;
-            } else if (!entityliving.isAlive()) {
-                return false;
-            } else if (entityliving instanceof EntityHuman && ((EntityHuman)entityliving).abilities.isInvulnerable) {
-                return false;
-            } else {
-                ScoreboardTeamBase scoreboardteambase = this.b.getScoreboardTeam();
-                ScoreboardTeamBase scoreboardteambase1 = entityliving.getScoreboardTeam();
-                if (scoreboardteambase != null && scoreboardteambase1 == scoreboardteambase) {
-                    return false;
-                } else {
-                    double d0 = this.f();
-                    return this.b.h(entityliving) > d0 * d0 ? false : !(entityliving instanceof EntityPlayer) || !((EntityPlayer)entityliving).playerInteractManager.isCreative();
-                }
-            }
-        }
-
-        public void c() {
-            this.b.setGoalTarget(this.e, EntityTargetEvent.TargetReason.CLOSEST_PLAYER, true);
-            super.c();
-        }
-
-        public void d() {
-            this.b.setGoalTarget((EntityLiving)null);
-            super.c();
-        }
-
-        protected double f() {
-            AttributeInstance attributeinstance = this.b.getAttributeInstance(GenericAttributes.FOLLOW_RANGE);
-            return attributeinstance == null ? 16.0 : attributeinstance.getValue();
         }
     }
 
-    static class PathfinderGoalSlimeNearestPlayer extends PathfinderGoal {
-        private CustomEntityGelatinousCube a;
+    private static class PathfinderGoalSlimeNearestPlayer extends PathfinderGoal {
+        private final EntitySlime a;
         private int b;
 
-        public PathfinderGoalSlimeNearestPlayer(CustomEntityGelatinousCube entityslime) {
+        public PathfinderGoalSlimeNearestPlayer(EntitySlime entityslime) {
             this.a = entityslime;
-            this.a(2);
+            this.a(EnumSet.of(Type.b));
         }
 
         public boolean a() {
-            EntityLiving entityliving = this.a.getGoalTarget();
-            return entityliving == null ? false : (!entityliving.isAlive() ? false : !(entityliving instanceof EntityHuman) || !((EntityHuman)entityliving).abilities.isInvulnerable);
+            EntityLiving entityliving = this.a.q();
+            return entityliving == null ? false : (!this.a.c(entityliving) ? false : this.a.K() instanceof GelatinousCubeController);
         }
 
         public void c() {
-            this.b = 300;
+            this.b = b(300);
             super.c();
         }
 
         public boolean b() {
-            EntityLiving entityliving = this.a.getGoalTarget();
-            return entityliving == null ? false : (!entityliving.isAlive() ? false : (entityliving instanceof EntityHuman && ((EntityHuman)entityliving).abilities.isInvulnerable ? false : --this.b > 0));
+            EntityLiving entityliving = this.a.q();
+            return entityliving == null ? false : (!this.a.c(entityliving) ? false : --this.b > 0);
         }
 
-        public void e() {
-            this.a.a(this.a.getGoalTarget(), 10.0F, 10.0F);
-            ((ControllerMoveGelatinous)this.a.getControllerMove()).a(this.a.yaw, this.a.ci());
-        }
-    }
-
-    static class PathfinderGoalSlimeRandomJump extends PathfinderGoal {
-        private EntitySlime a;
-
-        public PathfinderGoalSlimeRandomJump(EntitySlime entityslime) {
-            this.a = entityslime;
-            this.a(5);
-            ((Navigation)entityslime.getNavigation()).d(true);
-        }
-
-        public boolean a() {
-            return this.a.V() || this.a.ab();
-        }
-
-        public void e() {
-            if (this.a.bc().nextFloat() < 0.8F) {
-                this.a.getControllerJump().a();
-            }
-
-            ((ControllerMoveGelatinous)this.a.getControllerMove()).a(1.2);
-        }
-    }
-
-    static class PathfinderGoalSlimeIdle extends PathfinderGoal {
-        private CustomEntityGelatinousCube a;
-
-        public PathfinderGoalSlimeIdle(CustomEntityGelatinousCube entityslime) {
-            this.a = entityslime;
-            this.a(5);
-        }
-
-        public boolean a() {
+        public boolean T_() {
             return true;
         }
 
         public void e() {
-            ((ControllerMoveGelatinous)this.a.getControllerMove()).a(1.0);
+            EntityLiving entityliving = this.a.q();
+            if (entityliving != null) {
+                this.a.a(entityliving, 10.0F, 10.0F);
+            }
+
+            ControllerMove controllermove = this.a.K();
+            if (controllermove instanceof GelatinousCubeController entityslime_controllermoveslime) {
+                entityslime_controllermoveslime.a(this.a.dC(), !this.a.gg() && this.a.cY());
+            }
+
         }
     }
 
-    static class PathfinderGoalSlimeRandomDirection extends PathfinderGoal {
-        private EntitySlime a;
+    private static class PathfinderGoalSlimeRandomDirection extends PathfinderGoal {
+        private final CustomEntityGelatinousCube a;
         private float b;
         private int c;
 
-        public PathfinderGoalSlimeRandomDirection(EntitySlime entityslime) {
+        public PathfinderGoalSlimeRandomDirection(CustomEntityGelatinousCube entityslime) {
             this.a = entityslime;
-            this.a(2);
+            this.a(EnumSet.of(Type.b));
         }
 
         public boolean a() {
-            return this.a.getGoalTarget() == null && (this.a.onGround || this.a.V() || this.a.ab());
+            return this.a.q() == null && (this.a.aC() || this.a.aZ() || this.a.bn() || this.a.a((MobEffectList) MobEffects.y)) && this.a.K() instanceof GelatinousCubeController;
         }
 
         public void e() {
             if (--this.c <= 0) {
-                this.c = 40 + this.a.bc().nextInt(60);
-                this.b = (float)this.a.bc().nextInt(360);
+                this.c = this.a(40 + this.a.eg().a(60));
+                this.b = (float)this.a.eg().a(360);
             }
 
-            ((ControllerMoveGelatinous)this.a.getControllerMove()).a(this.b, false);
+            ControllerMove controllermove = this.a.K();
+            if (controllermove instanceof GelatinousCubeController entityslime_controllermoveslime) {
+                entityslime_controllermoveslime.a(this.b, false);
+            }
+
         }
     }
 
-    static class ControllerMoveGelatinous extends ControllerMove {
+    private static class PathfinderGoalSlimeRandomJump extends PathfinderGoal {
+        private final CustomEntityGelatinousCube a;
 
-        private float g;
-        private int h;
-        private final CustomEntityGelatinousCube i;
-        private boolean j;
-        public ControllerMoveGelatinous(CustomEntityGelatinousCube entityInsentient) {
-            super(entityInsentient);
-            i = entityInsentient;
+        public PathfinderGoalSlimeRandomJump(CustomEntityGelatinousCube entityslime) {
+            this.a = entityslime;
+            this.a(EnumSet.of(Type.c, Type.a));
+            entityslime.N().a(true);
         }
 
-        public void a(float f, boolean flag) {
-            this.g = f;
-            this.j = flag;
+        public boolean a() {
+            return (this.a.aZ() || this.a.bn()) && this.a.K() instanceof GelatinousCubeController;
         }
 
-        public void a(double d0) {
-            this.e = d0;
-            this.f = true;
+        public boolean T_() {
+            return true;
         }
 
-        @Override
-        public void c() {
-            this.a.yaw = this.a(this.a.yaw, this.g, 30.0F);
-            this.a.aK = this.a.yaw;
-            this.a.aI = this.a.yaw;
-            if (!this.f) {
-                this.a.n(0.0F);
-            } else {
-                this.f = false;
-                if (this.a.onGround) {
-                    this.a.k((float)(this.e * this.a.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).getValue()));
-                    if (this.h-- <= 0) {
-                        this.h = this.i.cg();
-                        if (this.j) {
-                            this.h /= 3;
-                        }
+        public void e() {
+            if (this.a.eg().i() < 0.8F) {
+                this.a.M().a();
+            }
 
-                        if(this.j) {
-                            this.i.getControllerJump().a();
-                        }
-                        if (this.i.cn()) {
-                            this.i.makeSound(this.i.ck(), this.i.bB(), ((this.i.bc().nextFloat() - this.i.bc().nextFloat()) * 0.2F + 1.0F) * 0.8F);
-                        }
-                    } else {
-                        this.i.aZ = this.i.ba = 0.0F;
-                        this.a.k(0.0F);
-                    }
-                } else {
-                    this.a.k((float)(this.e * this.a.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).getValue()));
-                }
+            ControllerMove controllermove = this.a.K();
+            if (controllermove instanceof GelatinousCubeController entityslime_controllermoveslime) {
+                entityslime_controllermoveslime.a(1.2);
             }
 
         }

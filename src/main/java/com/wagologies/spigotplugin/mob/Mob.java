@@ -2,6 +2,7 @@ package com.wagologies.spigotplugin.mob;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.util.Vector;
 
 public interface Mob {
     int getMaxHealth();
@@ -9,7 +10,8 @@ public interface Mob {
     void spawn(Location location);
     void teleport(Location location);
     void teleport(Entity entity);
-    void damage(int damage);
+    void setVelocity(Vector velocity);
+    boolean damage(int damage);
     String getName();
     void die();
     void remove();

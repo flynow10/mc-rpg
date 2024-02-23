@@ -7,6 +7,7 @@ import net.citizensnpcs.api.event.NPCDamageByEntityEvent;
 import net.citizensnpcs.api.event.NPCDamageEvent;
 import net.citizensnpcs.api.event.NPCDeathEvent;
 import net.citizensnpcs.api.event.NPCSpawnEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -21,12 +22,19 @@ public class PlayerManager implements Listener {
     private final SpigotPlugin plugin;
     private boolean shouldAutoJoin = true;
 
-    private List<RPGPlayer> players = new ArrayList<>();
+    private final List<RPGPlayer> players = new ArrayList<>();
     public PlayerManager(SpigotPlugin plugin) {
         this.plugin = plugin;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::tick, 0, 1);
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
         plugin.getLogger().info("Loaded Player Manager");
+    }
+
+    private void tick() {
+        for (RPGPlayer player : players) {
+            player.tick();
+        }
     }
 
     @EventHandler
@@ -58,6 +66,14 @@ public class PlayerManager implements Listener {
         player.getPlayer().sendMessage(ChatColor.GREEN + "Successfully left!");
         plugin.getLogger().info("Removed Player \"" + player.getPlayer().getName() + "\" from player manager");
         players.remove(player);
+    }
+
+    public RPGPlayer getPlayer(Player player) {
+        return players.stream().filter(rpgPlayer -> rpgPlayer.getPlayer().equals(player)).findFirst().orElse(null);
+    }
+
+    public List<RPGPlayer> getPlayers() {
+        return players;
     }
 
     public void toggleAutoJoin(boolean newValue) {

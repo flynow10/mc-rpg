@@ -1,27 +1,36 @@
-package com.wagologies.spigotplugin.mob;
+package com.wagologies.spigotplugin.mob.mobs;
 
+import com.wagologies.spigotplugin.mob.EntityMob;
 import com.wagologies.spigotplugin.mob.custom.CustomEntityGelatinousCube;
+import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EnumCreatureType;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Slime;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.SlimeSplitEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 public class GelatinousCube extends EntityMob {
 
     @Override
     public Entity createBaseEntity(World world, Location location) {
-        CustomEntityGelatinousCube gelatinousCube = new CustomEntityGelatinousCube(((CraftWorld) world).getHandle());
-        gelatinousCube.setPositionRotation(location.getX(), location.getY(), location.getZ(), location.getPitch(), location.getYaw());
-        ((CraftWorld)world).getHandle().addEntity(gelatinousCube, CreatureSpawnEvent.SpawnReason.CUSTOM);
-        return gelatinousCube.getBukkitEntity();
+        CraftWorld craftWorld = (CraftWorld) world;
+        CustomEntityGelatinousCube gelatinousCube = new CustomEntityGelatinousCube(EntityTypes.aM, craftWorld.getHandle());
+        gelatinousCube.setPos(location);
+        craftWorld.getHandle().addFreshEntity(gelatinousCube, CreatureSpawnEvent.SpawnReason.CUSTOM);
+        Slime slime = (Slime) gelatinousCube.getBukkitEntity();
+        slime.setSize(7);
+        return slime;
     }
 
     @Override
@@ -32,13 +41,6 @@ public class GelatinousCube extends EntityMob {
     @Override
     public int getMaxHealth() {
         return 200;
-    }
-
-    @EventHandler
-    public void onSlimeSplit(SlimeSplitEvent event) {
-        if(event.getEntity() == this.baseEntity) {
-            event.setCancelled(true);
-        }
     }
 
     @EventHandler

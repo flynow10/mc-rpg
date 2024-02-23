@@ -1,5 +1,6 @@
 name: 'SpigotPlugin'
 version: 1.0
+api-version: 1.20
 main: com.wagologies.spigotplugin.SpigotPlugin
 depend:
   - ProtocolLib

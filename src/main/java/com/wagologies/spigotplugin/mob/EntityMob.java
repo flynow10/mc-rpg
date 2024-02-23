@@ -1,70 +1,97 @@
 package com.wagologies.spigotplugin.mob;
 
-import org.bukkit.Location;
-import org.bukkit.World;
+import com.wagologies.spigotplugin.event.DamageMobByPlayer;
+import com.wagologies.spigotplugin.event.DamageMobEvent;
+import com.wagologies.spigotplugin.event.SpellHitEntityEvent;
+import com.wagologies.spigotplugin.player.RPGPlayer;
+import com.wagologies.spigotplugin.spell.BaseSpell;
+import com.wagologies.spigotplugin.spell.SpellType;
+import com.wagologies.spigotplugin.spell.spells.EldritchBlast;
+import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class EntityMob extends AbstractMob {
     protected Entity baseEntity;
-    private ArmorStand armorStand;
     public void spawn(Location location) {
-        baseEntity = createBaseEntity(location.getWorld(), location);
-        armorStand = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
-        armorStand.setGravity(false);
-        armorStand.setVisible(false);
-        armorStand.setSmall(true);
-        armorStand.setCustomNameVisible(true);
-        Slime slimePositioner = (Slime) location.getWorld().spawnEntity(location, EntityType.SLIME);
-        slimePositioner.setSize(-1);
-        slimePositioner.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1, false, false), true);
-        slimePositioner.setPassenger(armorStand);
-        baseEntity.setPassenger(slimePositioner);
+        World world = location.getWorld();
+        assert world != null;
+        baseEntity = createBaseEntity(world, location);
         updateName();
     }
 
 
     public void teleport(Location location) {
-        Entity nameTag = this.baseEntity.getPassenger();
-        this.baseEntity.eject();
         this.baseEntity.teleport(location);
-        this.baseEntity.setPassenger(nameTag);
     }
 
     public void teleport(Entity entity) {
         this.teleport(entity.getLocation());
     }
 
+    @Override
+    public void setVelocity(Vector velocity) {
+        this.baseEntity.setVelocity(velocity);
+    }
+
     public void updateName() {
-        this.armorStand.setCustomName(getHoverText());
+        this.baseEntity.setCustomName(getHoverText());
+        this.baseEntity.setCustomNameVisible(true);
+    }
+
+    public Entity getBaseEntity() {
+        return baseEntity;
     }
 
     public abstract Entity createBaseEntity(World world, Location location);
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamage(EntityDamageEvent event) {
-        if(event.isCancelled()) {
+        Entity entity = event.getEntity();
+        if (!entity.equals(baseEntity)) {
             return;
         }
-        Entity entity = event.getEntity();
-        Entity passenger = baseEntity.getPassenger();
-        while(passenger != null) {
-            if(entity.equals(passenger)) {
-                event.setCancelled(true);
-                return;
-            }
-            passenger = passenger.getPassenger();
+
+        DamageMobEvent damageEvent = createDamageEvent(event);
+
+        Bukkit.getPluginManager().callEvent(damageEvent);
+        if(damageEvent.isCancelled()) {
+            return;
         }
 
-        if (entity.equals(baseEntity)) {
-            event.setDamage(0);
-            damage(10);
-            updateName();
+        event.setDamage(0);
+        damage(damageEvent.getDamage());
+        updateName();
+    }
+
+    @EventHandler
+    public void onSpellHit(SpellHitEntityEvent event) {
+        if(event.getEntity().equals(baseEntity)) {
+            BaseSpell spell = event.getSpell();
+            if(spell instanceof EldritchBlast blast) {
+                if(baseEntity instanceof LivingEntity livingEntity) {
+                    livingEntity.playHurtAnimation(0);
+                    Sound hurtSound = livingEntity.getHurtSound();
+                    if(hurtSound != null) {
+                        baseEntity.getWorld().playSound(livingEntity, hurtSound, 1, 1);
+                    }
+                }
+                Vector direction = blast.getDirection().clone().normalize();
+                direction.setY(0.4);
+                baseEntity.setVelocity(direction);
+                damage(5);
+                updateName();
+            }
         }
     }
 
@@ -75,19 +102,9 @@ public abstract class EntityMob extends AbstractMob {
             event.getDrops().clear();
         }
     }
-
-    private void removeNameTag() {
-        Entity passenger = baseEntity.getPassenger();
-        while(passenger != null) {
-            Entity next = passenger.getPassenger();
-            passenger.remove();
-            passenger = next;
-        }
-    }
     @Override
     public void onDeath() {
         super.onDeath();
-        removeNameTag();
         if(baseEntity instanceof Damageable) {
             ((Damageable) baseEntity).setHealth(0);
         } else {
@@ -98,7 +115,6 @@ public abstract class EntityMob extends AbstractMob {
     @Override
     public void remove() {
         super.remove();
-        removeNameTag();
         baseEntity.remove();
     }
 }

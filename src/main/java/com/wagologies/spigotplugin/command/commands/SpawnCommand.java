@@ -1,11 +1,21 @@
 package com.wagologies.spigotplugin.command.commands;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
-import com.wagologies.spigotplugin.command.BaseCommand;
 import com.wagologies.spigotplugin.command.PlayerCommand;
 import com.wagologies.spigotplugin.mob.*;
+import com.wagologies.spigotplugin.mob.mobs.GelatinousCube;
+import com.wagologies.spigotplugin.mob.mobs.Kobold;
+import com.wagologies.spigotplugin.mob.mobs.Kobold2;
+import com.wagologies.spigotplugin.mob.mobs.SplitterSpider;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public class SpawnCommand extends PlayerCommand {
 
@@ -15,22 +25,26 @@ public class SpawnCommand extends PlayerCommand {
 
     @Override
     public boolean playerExecutor(Player player, String s, String[] strings) {
-        Mob mob = null;
         if(strings.length >= 1) {
-            if(strings[0].equals("0")) {
-                mob = new Kobold();
+            try {
+                MobType mobType = Arrays.stream(MobType.values()).filter(type -> type.getName().equals(strings[0])).findAny().orElseThrow();
+                plugin.getMobManager().spawn(mobType, player.getLocation());
+                player.sendMessage(ChatColor.GREEN + "Successfully spawned a " + mobType.getName());
+            } catch (NoSuchElementException e) {
+                player.sendMessage(ChatColor.RED + "There is no mob type named " + strings[0] + "!");
             }
-            if(strings[0].equals("1")) {
-                mob = new GelatinousCube();
-            }
-            if(strings[0].equals("2")) {
-                mob = new SplitterSpider();
-            }
+        } else {
+            player.sendMessage(ChatColor.RED + "Missing mob type!");
         }
-        if(mob == null) {
-            mob = new Kobold();
-        }
-        plugin.getMobManager().spawn(mob, player.getLocation());
         return true;
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException {
+        final List<String> completions = new ArrayList<>();
+        if(args.length == 1) {
+            StringUtil.copyPartialMatches(args[0], Arrays.stream(MobType.values()).map(MobType::getName).toList(), completions);
+        }
+        return completions;
     }
 }

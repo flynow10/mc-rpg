@@ -1,18 +1,13 @@
 package com.wagologies.spigotplugin.utils;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
-import net.minecraft.server.v1_8_R3.IChatBaseComponent;
-import net.minecraft.server.v1_8_R3.PacketPlayOutChat;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.bukkit.scheduler.BukkitRunnable;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class ActionBar {
 
@@ -32,11 +27,10 @@ public class ActionBar {
         Bukkit.getPluginManager().callEvent(actionBarEvent);
         if(actionBarEvent.isCancelled()) {
             return;
+
         }
 
-        PacketPlayOutChat packet = new PacketPlayOutChat(IChatBaseComponent.ChatSerializer.a("{\"text\":\"" + actionBarEvent.message + "\"}"), (byte) 2);
-        CraftPlayer craftPlayer = ((CraftPlayer) player);
-        craftPlayer.getHandle().playerConnection.sendPacket(packet);
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(message));
     }
 
     public void sendActionBar(Player player, String message, int duration) {

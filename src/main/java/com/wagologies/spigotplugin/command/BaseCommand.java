@@ -4,7 +4,7 @@ import com.google.common.reflect.ClassPath;
 import com.wagologies.spigotplugin.SpigotPlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.SimpleCommandMap;
-import org.bukkit.craftbukkit.v1_8_R3.CraftServer;
+import org.bukkit.craftbukkit.v1_20_R3.CraftServer;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;

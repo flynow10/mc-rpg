@@ -1,5 +1,6 @@
-package com.wagologies.spigotplugin.mob;
+package com.wagologies.spigotplugin.mob.mobs;
 
+import com.wagologies.spigotplugin.mob.EntityMob;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -34,7 +35,7 @@ public class SplitterSpider extends EntityMob {
     }
 
     protected void split() {
-        List<Player> players= this.baseEntity.getLocation().getWorld().getPlayers();
+        List<Player> players= this.baseEntity.getWorld().getPlayers();
         Player closestPlayer = null;
         double playerDistance = Double.MAX_VALUE;
         for(Player player : players) {
@@ -61,7 +62,7 @@ public class SplitterSpider extends EntityMob {
 
             velocity = velocity.add(new Vector(0, 0.4, 0));
 
-            spider.baseEntity.setVelocity(velocity);
+            spider.getBaseEntity().setVelocity(velocity);
         }
     }
 }
