@@ -34,8 +34,12 @@ public class ActionBar {
     }
 
     public void sendActionBar(Player player, String message, int duration) {
+        this.sendActionBar(player, message, duration, true);
+    }
+
+    public void sendActionBar(Player player, String message, int duration, boolean clearAtEnd) {
         sendActionBar(player, message);
-        if(duration >= 0) {
+        if(duration >= 0 && clearAtEnd) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 sendActionBar(player, "");
             }, duration + 1);
