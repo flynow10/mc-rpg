@@ -25,6 +25,9 @@ public abstract class BaseCommand extends Command {
                 Object obj = c.newInstance(plugin);
                 if (obj instanceof Command) {
                     Command cmd = (Command) obj;
+                    if(cmd.getPermission() == null) {
+                        cmd.setPermission("admin");
+                    }
                     registerCommand(cmd, plugin);
                 }
             } catch (Exception e) {

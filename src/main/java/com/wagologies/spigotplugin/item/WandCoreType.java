@@ -11,6 +11,7 @@ public enum WandCoreType {
     INERT("No Core", 0, Material.DEAD_BUSH),
     ENCHANTED_STRING("Enchanted String", 1, Material.STRING);
 
+
     private final String name;
     private final int spellSlots;
     private final Material itemMaterial;

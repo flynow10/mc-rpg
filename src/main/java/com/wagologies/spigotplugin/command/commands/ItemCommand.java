@@ -18,7 +18,7 @@ public class ItemCommand extends PlayerCommand {
         super(plugin, "item");
     }
     private static final String[] SUB_COMMANDS = {"give", "identify"};
-    private static final String[] ITEM_TYPES = {"wand", "sword"};
+    private static final String[] ITEM_TYPES = {"wand", "sword", "armor"};
 
     @Override
     public boolean playerExecutor(Player player, String s, String[] strings) {
@@ -45,6 +45,18 @@ public class ItemCommand extends PlayerCommand {
                     meleeWeapon.setBaseDamage(baseDamage);
                     player.getInventory().addItem(meleeWeapon.getItemStack());
                 }
+                if(strings[1].equals("armor")) {
+                    Armor armor = new Armor(plugin, new ItemStack(Material.IRON_CHESTPLATE));
+                    int armorClass = 1;
+                    try {
+                        if(strings.length >= 3) {
+                            armorClass = Integer.parseInt(strings[2]);
+                        }
+                    } catch (NumberFormatException ignored) {}
+                    armor.setArmorClass(armorClass);
+                    armor.setWeight(armorClass*3);
+                    player.getInventory().addItem(armor.getItemStack());
+                }
                 break;
             }
             case "identify": {
@@ -53,8 +65,9 @@ public class ItemCommand extends PlayerCommand {
                     player.sendMessage(ChatColor.RED + "You aren't holding anything!");
                     return true;
                 }
-                CustomItem customItem = CustomItem.ConvertToCustomItem(plugin, holdingItem);
-                ItemType itemType = customItem.getItemType();
+                RPGItem rpgItem = RPGItem.ConvertToCustomItem(plugin, holdingItem);
+                assert rpgItem != null;
+                ItemType itemType = rpgItem.getItemType();
                 player.sendMessage("You are holding a " + itemType);
                 break;
             }

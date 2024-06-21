@@ -1,9 +1,7 @@
 package com.wagologies.spigotplugin.spell;
 
-import com.wagologies.spigotplugin.item.WandCoreType;
 import com.wagologies.spigotplugin.spell.SpellCast.SpellLine;
-import com.wagologies.spigotplugin.spell.spells.Darkness;
-import com.wagologies.spigotplugin.spell.spells.EldritchBlast;
+import com.wagologies.spigotplugin.spell.spells.*;
 import org.bukkit.ChatColor;
 
 import javax.annotation.Nullable;
@@ -12,7 +10,11 @@ import java.util.List;
 
 public enum SpellType {
     EldritchBlast("Eldritch Blast", new SpellLine[]{SpellLine.UP, SpellLine.LEFT}, EldritchBlast.class, 15),
-    Darkness("Darkness", new SpellLine[]{SpellLine.RIGHT, SpellLine.UP}, Darkness.class, 20);
+    Darkness("Darkness", new SpellLine[]{SpellLine.RIGHT, SpellLine.UP}, Darkness.class, 24),
+    Jump("Jump", new SpellLine[]{SpellLine.UP_RIGHT, SpellLine.UP_LEFT}, Jump.class, 18),
+    GustOfWind("Gust of Wind", new SpellLine[]{ SpellLine.RIGHT }, GustOfWind.class, 28),
+    AuraOfVitality("Aura of Vitality", new SpellLine[]{SpellLine.DOWN, SpellLine.LEFT, SpellLine.UP}, AuraOfVitality.class, 65),
+    MagicMissile("Magic Missile", new SpellLine[] {SpellLine.UP, SpellLine.DOWN}, MagicMissile.class, 42);
 
     private final String name;
     private final List<SpellLine> incantation;

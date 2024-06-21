@@ -4,5 +4,6 @@ public enum ItemType {
     UNKNOWN,
     MELEE_WEAPON,
     WAND,
-    WAND_CORE
+    WAND_CORE,
+    ARMOR
 }

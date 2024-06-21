@@ -1,80 +1,41 @@
 package com.wagologies.spigotplugin.mob;
 
-import com.wagologies.spigotplugin.event.DamageMobByPlayer;
-import com.wagologies.spigotplugin.event.DamageMobEvent;
-import com.wagologies.spigotplugin.player.RPGPlayer;
-import com.wagologies.spigotplugin.spell.MagicAffectable;
+import com.wagologies.spigotplugin.SpigotPlugin;
+import com.wagologies.spigotplugin.entity.DamageSource;
+import com.wagologies.spigotplugin.entity.RPGEntity;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.Location;
 import org.bukkit.event.entity.EntityDamageEvent;
 
-public abstract class AbstractMob implements Mob, Listener {
-    protected int health = getMaxHealth();
-    protected MobManager mobManager;
+import java.util.Arrays;
 
-    public int getHealth() {
-        return health;
+public abstract class AbstractMob extends RPGEntity {
+    public AbstractMob(SpigotPlugin plugin) {
+        super(plugin);
     }
 
-    public boolean damage(int damage) {
-        if(damage != 0) {
-            this.health = Math.max(0, this.health - damage);
-        }
+    public abstract void spawn(Location location);
+    public abstract MobType getType();
 
-        if(this.health == 0) {
-            onDeath();
-            return true;
-        }
+    public abstract void updateName();
+
+    public String getDisplayName() {
+        return ChatColor.RED + getName() + ChatColor.GRAY + " [" + ChatColor.DARK_RED + getHealth() + "/" + getMaxHealth() + ChatColor.GRAY + "]";
+    }
+
+    @Override
+    public String getName() {
+        return getType().getName();
+    }
+
+    @Override
+    public void setHealth(int newHealth) {
+        super.setHealth(newHealth);
+        updateName();
+    }
+
+    @Override
+    public boolean isInvulnerable() {
         return false;
-    }
-
-    public String getHoverText() {
-        return getName() + " " + ChatColor.RED + health + "/" + getMaxHealth();
-    }
-
-    protected DamageMobEvent createDamageEvent(EntityDamageEvent baseDamageEvent) {
-        int initialDamage = 0;
-        DamageMobEvent damageEvent = null;
-        if(baseDamageEvent instanceof EntityDamageByEntityEvent damageByEntityEvent) {
-            Entity attacker = damageByEntityEvent.getDamager();
-            if(attacker instanceof Player) {
-                RPGPlayer rpgPlayer = mobManager.getPlugin().getPlayerManager().getPlayer((Player) attacker);
-                if(rpgPlayer != null) {
-                    damageEvent = new DamageMobByPlayer(rpgPlayer, this, initialDamage, baseDamageEvent);
-                }
-            }
-        }
-
-        if(damageEvent == null) {
-            damageEvent = new DamageMobEvent(this, initialDamage, baseDamageEvent);
-        }
-        return damageEvent;
-    }
-
-    @Override
-    public void die() {
-        this.health = 0;
-        onDeath();
-    }
-
-    public MobManager getMobManager() {
-        return mobManager;
-    }
-
-    @Override
-    public void setMobManager(MobManager mobManager) {
-        this.mobManager = mobManager;
-    }
-
-    public void onDeath() {
-        mobManager.onMobRemove(this);
-    }
-
-    @Override
-    public void remove() {
-        mobManager.onMobRemove(this);
     }
 }

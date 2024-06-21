@@ -3,15 +3,19 @@ package com.wagologies.spigotplugin.mob;
 import com.wagologies.spigotplugin.mob.mobs.*;
 
 public enum MobType {
+    BANDIT("Bandit", Bandit.class),
     KOBOLD("Kobold", Kobold.class),
-    KOBOLD2("Kobold2", Kobold2.class),
-    GELATINOUS_CUBE("GelatinousCube", GelatinousCube.class),
-    SPLITTER_SPIDER("SplitterSpider", SplitterSpider.class),
-    SPLIT_SPIDER("SplitSpider", SplitSpider.class);
+    POLAR_BEAR("Polar Bear", PolarBear.class),
+    GELATINOUS_CUBE("Gelatinous Cube", GelatinousCube.class),
+    SPLITTER_SPIDER("Splitter Spider", SplitterSpider.class),
+    SPLIT_SPIDER("Mini Spider", SplitSpider.class),
+    DIRE_WOLF("Dire Wolf", DireWolf.class),
+    WOLF("Wolf", Wolf.class),
+    DUMMY("Dummy", Dummy.class);
 
     private final String name;
-    private final Class<? extends Mob> mobClass;
-    MobType(String name, Class<? extends Mob> mobClass) {
+    private final Class<? extends AbstractMob> mobClass;
+    MobType(String name, Class<? extends AbstractMob> mobClass) {
         this.name = name;
         this.mobClass = mobClass;
     }
@@ -20,7 +24,7 @@ public enum MobType {
         return name;
     }
 
-    public Class<? extends Mob> getMobClass() {
+    public Class<? extends AbstractMob> getMobClass() {
         return mobClass;
     }
 }

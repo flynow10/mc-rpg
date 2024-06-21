@@ -1,7 +1,7 @@
 package com.wagologies.spigotplugin.event;
 
+import com.wagologies.spigotplugin.entity.RPGEntity;
 import com.wagologies.spigotplugin.spell.SpellType;
-import com.wagologies.spigotplugin.spell.SpellCaster;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -10,16 +10,16 @@ import javax.annotation.Nonnull;
 
 public class CastSpellEvent extends Event implements Cancellable {
     private static final HandlerList handlerList = new HandlerList();
-    final SpellCaster spellcaster;
+    final RPGEntity spellcaster;
     final SpellType spellType;
     private boolean canceled = false;
 
-    public CastSpellEvent(SpellCaster spellcaster, SpellType spellType) {
+    public CastSpellEvent(RPGEntity spellcaster, SpellType spellType) {
         this.spellcaster = spellcaster;
         this.spellType = spellType;
     }
 
-    public SpellCaster getSpellcaster() {
+    public RPGEntity getSpellcaster() {
         return spellcaster;
     }
 

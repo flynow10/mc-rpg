@@ -60,6 +60,9 @@ public class SpellCast {
 
     private List<Location> getTransformedCastingPoints() {
         List<Location> transformedPoints = new ArrayList<>();
+        if(castingPoints.isEmpty()) {
+            return transformedPoints;
+        }
         double angle = Math.acos(normalizedPlane.dot(new Vector(0, 0, 1))/ normalizedPlane.length());
         boolean mirror = false;
         if(angle > Math.PI / 2) {
@@ -85,6 +88,9 @@ public class SpellCast {
     private List<SpellLine> filterPointsToSpellLines(List<Location> points, int minSequenceLength) {
         List<SpellLine> currentPartialSequence = new ArrayList<>();
         List<SpellLine> fullSequence = new ArrayList<>();
+        if(points.isEmpty()) {
+            return fullSequence;
+        }
         for (int i = 1; i < points.size(); i++) {
             Vector temp = points.get(i).toVector().subtract(points.get(i-1).toVector()).normalize();
             double[] dimensions = new double[] {temp.getX(), temp.getY()};

@@ -1,5 +1,7 @@
 package com.wagologies.spigotplugin.particle;
 
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.util.Vector;
 
 public class Particle<T> {
@@ -37,5 +39,9 @@ public class Particle<T> {
 
     public T getData() {
         return data;
+    }
+    public void spawnParticle(Location location, World world) {
+        Vector offset = this.getOffset();
+        world.spawnParticle(this.getParticleType(), location, this.getCount(), offset.getX(), offset.getY(), offset.getZ(), this.getData());
     }
 }

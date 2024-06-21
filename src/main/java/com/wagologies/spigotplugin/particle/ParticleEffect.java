@@ -15,14 +15,16 @@ public abstract class ParticleEffect {
     public abstract void draw(Particle<?> particle, Location location);
 
     public void drawForTicks(Particle<?> particle, Location location, int ticks) {
-        while(ticks > 3) {
-            ticks -= 3;
+        this.drawForTicks(particle, location, ticks, 3);
+    }
+    public void drawForTicks(Particle<?> particle, Location location, int ticks, int spacing) {
+        while(ticks > spacing) {
+            ticks -= spacing;
             Bukkit.getScheduler().runTaskLater(plugin, () -> draw(particle, location), ticks);
         }
     }
 
     protected void spawnParticle(Particle<?> particle, Location location, World world) {
-        Vector offset = particle.getOffset();
-        world.spawnParticle(particle.getParticleType(), location, particle.getCount(), offset.getX(), offset.getY(), offset.getZ(), particle.getData());
+        particle.spawnParticle(location, world);
     }
 }

@@ -2,6 +2,7 @@ package com.wagologies.spigotplugin.command.commands;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.command.PlayerCommand;
+import com.wagologies.spigotplugin.entity.DamageSource;
 import com.wagologies.spigotplugin.player.RPGPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -53,7 +54,7 @@ public class DamagePlayerCommand extends PlayerCommand {
             return true;
         }
 
-        playerToDamage.damage(damage);
+        playerToDamage.damage(new DamageSource(DamageSource.DamageType.COMMAND), damage);
         return true;
     }
 

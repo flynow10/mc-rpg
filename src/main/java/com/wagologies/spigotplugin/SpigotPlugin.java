@@ -1,42 +1,56 @@
 package com.wagologies.spigotplugin;
 
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
+import com.samjakob.spigui.SpiGUI;
 import com.wagologies.spigotplugin.battle.Battle;
 import com.wagologies.spigotplugin.battle.BattleManager;
+import com.wagologies.spigotplugin.campaign.Campaign;
+import com.wagologies.spigotplugin.campaign.CampaignManager;
 import com.wagologies.spigotplugin.command.BaseCommand;
+import com.wagologies.spigotplugin.entity.EntityManager;
+import com.wagologies.spigotplugin.entity.RPGEntity;
 import com.wagologies.spigotplugin.item.ItemManager;
-import com.wagologies.spigotplugin.mob.MobManager;
+import com.wagologies.spigotplugin.lobby.LobbyManager;
 import com.wagologies.spigotplugin.player.PlayerManager;
 import com.wagologies.spigotplugin.spell.SpellManager;
 import com.wagologies.spigotplugin.utils.ActionBar;
 import com.wagologies.spigotplugin.utils.WeatherManager;
-import org.bukkit.NamespacedKey;
+import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.npc.MemoryNPCDataStore;
+import net.citizensnpcs.api.npc.NPCRegistry;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class SpigotPlugin extends JavaPlugin {
 
     private PlayerManager playerManager;
-    private MobManager mobManager;
+    private EntityManager entityManager;
     private ActionBar actionBar;
     private BattleManager battleManager;
+    private CampaignManager campaignManager;
     private WeatherManager weatherManager;
     private ItemManager itemManager;
     private SpellManager spellManager;
+    private LobbyManager lobbyManager;
+    private SpiGUI guiManager;
+    private NPCRegistry npcRegistry;
     @Override
     public void onEnable() {
         getLogger().info("onEnable is called!");
         Battle.RegisterConfiguration(this);
+        Campaign.RegisterConfiguration(this);
+        npcRegistry = CitizensAPI.createAnonymousNPCRegistry(new MemoryNPCDataStore());
+        campaignManager = new CampaignManager(this);
+        lobbyManager = new LobbyManager(this);
         playerManager = new PlayerManager(this);
-        mobManager = new MobManager(this);
-        actionBar = new ActionBar(this);
+        entityManager = new EntityManager(this);
         battleManager = new BattleManager(this);
-        weatherManager = new WeatherManager(this);
         itemManager = new ItemManager(this);
         spellManager = new SpellManager(this);
-
+        actionBar = new ActionBar(this);
+        weatherManager = new WeatherManager(this);
+        guiManager = new SpiGUI(this);
         try {
             BaseCommand.registerAllCommands(this);
         } catch (IOException e) {
@@ -48,16 +62,18 @@ public class SpigotPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("onDisable is called!");
-        mobManager.killAll();
+        for (RPGEntity entity : new ArrayList<>(entityManager.getEntities())) {
+            entity.remove(false);
+        }
+        campaignManager.saveCampaigns();
         battleManager.saveBattles();
     }
 
     public PlayerManager getPlayerManager() {
         return playerManager;
     }
-
-    public MobManager getMobManager() {
-        return mobManager;
+    public EntityManager getEntityManager() {
+        return entityManager;
     }
     public ActionBar getActionBar() {
         return actionBar;
@@ -65,10 +81,22 @@ public class SpigotPlugin extends JavaPlugin {
     public BattleManager getBattleManager() {
         return battleManager;
     }
+    public CampaignManager getCampaignManager() {
+        return campaignManager;
+    }
     public ItemManager getItemManager() {
         return itemManager;
     }
     public SpellManager getSpellManager() {
         return spellManager;
+    }
+    public LobbyManager getLobbyManager() {
+        return lobbyManager;
+    }
+    public SpiGUI getGuiManager() {
+        return guiManager;
+    }
+    public NPCRegistry getNPCRegistry() {
+        return npcRegistry;
     }
 }

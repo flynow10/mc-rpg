@@ -6,10 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class WandCore extends CustomItem {
+public class WandCore extends RPGItem {
     private static final String CoreTypeKey = "wand-core-type";
     private WandCoreType coreType;
     public WandCore(SpigotPlugin plugin, ItemStack itemStack) {
@@ -39,7 +36,7 @@ public class WandCore extends CustomItem {
         setCoreType(WandCoreType.fromString(coreData));
     }
 
-    private void setCoreType(WandCoreType coreType) {
+    public void setCoreType(WandCoreType coreType) {
         this.coreType = coreType;
         setPersistentData(CoreTypeKey, PersistentDataType.STRING, coreType.toString());
     }

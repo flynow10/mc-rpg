@@ -1,23 +1,24 @@
 package com.wagologies.spigotplugin.spell;
 
-import com.wagologies.spigotplugin.mob.Mob;
-import com.wagologies.spigotplugin.mob.MobManager;
-import com.wagologies.spigotplugin.player.PlayerManager;
-import com.wagologies.spigotplugin.player.RPGPlayer;
+import com.wagologies.spigotplugin.entity.RPGEntity;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
+
+import javax.annotation.Nullable;
 
 public abstract class BaseSpell {
     protected SpellManager spellManager;
-    protected SpellCaster spellCaster;
+    protected final RPGEntity spellCaster;
     protected boolean isActive = true;
-    public BaseSpell(SpellManager spellManager, SpellCaster spellCaster) {
+    protected int tickCount = 0;
+    public BaseSpell(SpellManager spellManager, RPGEntity spellCaster) {
         this.spellManager = spellManager;
         this.spellCaster = spellCaster;
     }
 
-    public abstract void tick();
+    public void tick() {
+        tickCount ++;
+    }
 
     public void endSpell() {
         isActive = false;
@@ -29,16 +30,15 @@ public abstract class BaseSpell {
     }
 
     public World getSpellWorld() {
-        return spellCaster.getCastingEntity().getWorld();
+        return spellCaster.getWorld();
     }
 
-    public MagicAffectable findMagicAffectedEntity(Entity entity) {
-        if(entity instanceof Player player && !entity.hasMetadata("NPC")) {
-            PlayerManager playerManager = spellManager.getPlugin().getPlayerManager();
-            return playerManager.getPlayer(player);
-        } else {
-            MobManager mobManager = spellManager.getPlugin().getMobManager();
-            return mobManager.getMobs().stream().filter(mob -> mob.getEntity().equals(entity)).findFirst().orElse(null);
-        }
+    public RPGEntity getSpellCaster() {
+        return spellCaster;
+    }
+
+    @Nullable
+    public RPGEntity findEntity(Entity entity) {
+        return spellManager.getPlugin().getEntityManager().getEntity(entity);
     }
 }

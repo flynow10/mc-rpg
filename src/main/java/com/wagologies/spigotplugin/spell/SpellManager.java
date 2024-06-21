@@ -1,6 +1,7 @@
 package com.wagologies.spigotplugin.spell;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
+import com.wagologies.spigotplugin.entity.RPGEntity;
 import com.wagologies.spigotplugin.item.Wand;
 import com.wagologies.spigotplugin.player.RPGPlayer;
 import org.bukkit.Bukkit;
@@ -27,9 +28,9 @@ public class SpellManager {
         }
     }
 
-    public BaseSpell castSpell(SpellCaster spellCaster, SpellType spellType) {
+    public BaseSpell castSpell(RPGEntity spellCaster, SpellType spellType) {
         try {
-            Constructor<? extends BaseSpell> spellConstructor = spellType.getSpellClass().getDeclaredConstructor(SpellManager.class, SpellCaster.class);
+            Constructor<? extends BaseSpell> spellConstructor = spellType.getSpellClass().getDeclaredConstructor(SpellManager.class, RPGEntity.class);
             BaseSpell spell = spellConstructor.newInstance(this, spellCaster);
             activeSpells.add(spell);
             return spell;
@@ -38,6 +39,16 @@ public class SpellManager {
         }
     }
 
+    public List<BaseSpell> getActiveSpells() {
+        return activeSpells;
+    }
+    public void cancelEntitySpells(RPGEntity entity) {
+        for (BaseSpell activeSpell : new ArrayList<>(activeSpells)) {
+            if(activeSpell.getSpellCaster().equals(entity)) {
+                activeSpell.endSpell();
+            }
+        }
+    }
     public SpigotPlugin getPlugin() {
         return plugin;
     }

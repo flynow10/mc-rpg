@@ -1,5 +1,7 @@
 package com.wagologies.spigotplugin.mob.custom;
 
+import com.wagologies.spigotplugin.SpigotPlugin;
+import com.wagologies.spigotplugin.mob.custom.pathfinder.GoalNearestAttackablePlayer;
 import net.minecraft.world.effect.MobEffectList;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityLiving;
@@ -8,17 +10,21 @@ import net.minecraft.world.entity.ai.attributes.GenericAttributes;
 import net.minecraft.world.entity.ai.control.ControllerMove;
 import net.minecraft.world.entity.ai.goal.PathfinderGoal;
 import net.minecraft.world.entity.ai.goal.target.PathfinderGoalNearestAttackableTarget;
-import net.minecraft.world.entity.animal.EntityIronGolem;
 import net.minecraft.world.entity.monster.EntitySlime;
 import net.minecraft.world.entity.player.EntityHuman;
 import net.minecraft.world.level.World;
 import org.bukkit.Location;
+import org.bukkit.event.entity.EntityRemoveEvent;
 
 import java.util.EnumSet;
 
-public class CustomEntityGelatinousCube extends EntitySlime {
-    public CustomEntityGelatinousCube(EntityTypes<? extends EntitySlime> entitytypes, World world) {
-        super(entitytypes, world);
+public class EntityGelatinousCube extends EntitySlime {
+
+    private final SpigotPlugin plugin;
+    public EntityGelatinousCube(SpigotPlugin plugin, World world) {
+        super(EntityTypes.aM, world);
+        this.plugin = plugin;
+        addTargetSelectorGoals();
         this.bL = new GelatinousCubeController(this);
         this.ai().a(world);
     }
@@ -29,10 +35,12 @@ public class CustomEntityGelatinousCube extends EntitySlime {
         this.bO.a(2, new PathfinderGoalSlimeNearestPlayer(this));
         this.bO.a(3, new PathfinderGoalSlimeRandomDirection(this));
         this.bO.a(5, new PathfinderGoalSlimeIdle(this));
-        this.bP.a(1, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, 10, true, false, (entityliving) -> {
-            return Math.abs(entityliving.dt() - this.dt()) <= 4.0;
-        }));
     }
+
+    protected void addTargetSelectorGoals() {
+        this.bP.a(1, new GoalNearestAttackablePlayer(plugin, this, true, (player) -> Math.abs(player.getLocation().getY() - this.dt()) <= 4.0));
+    }
+
 
     protected int A() {
         return this.ag.a(20) + 10;
@@ -48,7 +56,7 @@ public class CustomEntityGelatinousCube extends EntitySlime {
     }
 
     @Override
-    public void a(RemovalReason entity_removalreason) {
+    public void remove(RemovalReason entity_removalreason, EntityRemoveEvent.Cause cause) {
         this.b(entity_removalreason);
         this.bz.a();
     }
@@ -56,10 +64,10 @@ public class CustomEntityGelatinousCube extends EntitySlime {
     private static class GelatinousCubeController extends ControllerMove {
         private float yRot;
         private int jumpDelay;
-        private final CustomEntityGelatinousCube slime;
+        private final EntityGelatinousCube slime;
         private boolean isAggressive;
 
-        public GelatinousCubeController(CustomEntityGelatinousCube entitySlime) {
+        public GelatinousCubeController(EntityGelatinousCube entitySlime) {
             super(entitySlime);
             this.slime = entitySlime;
             this.yRot = 180.0F * entitySlime.dC() / 3.1415927F;
@@ -174,11 +182,11 @@ public class CustomEntityGelatinousCube extends EntitySlime {
     }
 
     private static class PathfinderGoalSlimeRandomDirection extends PathfinderGoal {
-        private final CustomEntityGelatinousCube a;
+        private final EntityGelatinousCube a;
         private float b;
         private int c;
 
-        public PathfinderGoalSlimeRandomDirection(CustomEntityGelatinousCube entityslime) {
+        public PathfinderGoalSlimeRandomDirection(EntityGelatinousCube entityslime) {
             this.a = entityslime;
             this.a(EnumSet.of(Type.b));
         }
@@ -202,9 +210,9 @@ public class CustomEntityGelatinousCube extends EntitySlime {
     }
 
     private static class PathfinderGoalSlimeRandomJump extends PathfinderGoal {
-        private final CustomEntityGelatinousCube a;
+        private final EntityGelatinousCube a;
 
-        public PathfinderGoalSlimeRandomJump(CustomEntityGelatinousCube entityslime) {
+        public PathfinderGoalSlimeRandomJump(EntityGelatinousCube entityslime) {
             this.a = entityslime;
             this.a(EnumSet.of(Type.c, Type.a));
             entityslime.N().a(true);

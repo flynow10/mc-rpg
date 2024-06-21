@@ -11,14 +11,14 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CustomItem {
-    private static final Map<ItemStack, CustomItem> TrackedItems = new HashMap<>();
+public class RPGItem {
+    private static final Map<ItemStack, RPGItem> TrackedItems = new HashMap<>();
     protected static String ItemIdKey = "item-id";
     protected final SpigotPlugin plugin;
     protected final ItemStack itemStack;
     protected ItemType itemType;
 
-    public CustomItem(SpigotPlugin plugin, ItemStack itemStack) {
+    public RPGItem(SpigotPlugin plugin, ItemStack itemStack) {
         this.plugin = plugin;
         this.itemStack = itemStack;
         setItemType(ItemType.UNKNOWN);
@@ -64,14 +64,24 @@ public class CustomItem {
         return itemType;
     }
 
-    public static CustomItem ConvertToCustomItem(SpigotPlugin plugin, ItemStack item) {
+    public String getDisplayName() {
+        ItemMeta meta = this.itemStack.getItemMeta();
+        assert meta != null;
+        return meta.getDisplayName();
+    }
+
+    @Nullable
+    public static RPGItem ConvertToCustomItem(SpigotPlugin plugin, ItemStack item) {
+        if(item.getType().isAir()) {
+            return null;
+        }
         if(TrackedItems.containsKey(item)) {
             return TrackedItems.get(item);
         }
         ItemType type = GetItemType(item);
         switch (type) {
             case UNKNOWN -> {
-                return new CustomItem(plugin, item);
+                return new RPGItem(plugin, item);
             }
             case MELEE_WEAPON -> {
                 return new MeleeWeapon(plugin, item);
@@ -82,13 +92,18 @@ public class CustomItem {
             case WAND_CORE -> {
                 return new WandCore(plugin, item);
             }
+            case ARMOR -> {
+                return new Armor(plugin, item);
+            }
             default -> throw new IllegalStateException("Unexpected value: " + type);
         }
     }
 
     public static ItemType GetItemType(ItemStack item) {
         ItemMeta meta = item.getItemMeta();
-        assert meta != null;
+        if(meta == null) {
+            return ItemType.UNKNOWN;
+        }
         String itemTypeString = meta.getPersistentDataContainer().get(ItemManager.getInstance().createKey(ItemIdKey), PersistentDataType.STRING);
         if(itemTypeString == null) {
             return ItemType.UNKNOWN;

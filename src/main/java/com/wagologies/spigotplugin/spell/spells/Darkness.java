@@ -1,9 +1,7 @@
 package com.wagologies.spigotplugin.spell.spells;
 
-import com.wagologies.spigotplugin.item.Wand;
-import com.wagologies.spigotplugin.player.RPGPlayer;
+import com.wagologies.spigotplugin.entity.RPGEntity;
 import com.wagologies.spigotplugin.spell.BaseSpell;
-import com.wagologies.spigotplugin.spell.SpellCaster;
 import com.wagologies.spigotplugin.spell.SpellManager;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -22,19 +20,18 @@ import java.util.List;
 public class Darkness extends BaseSpell {
     private final List<LivingEntity> affectedEntities = new ArrayList<>();
     private final Vector origin;
-    private int tickCount = 0;
-    public Darkness(SpellManager spellManager, SpellCaster spellCaster) {
-        super(spellManager, spellCaster);
-        origin = spellCaster.getLocation().toVector();
+    public Darkness(SpellManager spellManager, RPGEntity rpgEntity) {
+        super(spellManager, rpgEntity);
+        origin = rpgEntity.getLocation().toVector();
     }
 
     @Override
     public void tick() {
+        super.tick();
         if(tickCount >= 200) {
             endSpell();
             return;
         }
-        tickCount ++;
         float radius = 5;
         updateEntitiesList(radius);
         blindAffectedEntities();
@@ -93,7 +90,7 @@ public class Darkness extends BaseSpell {
             if(iRadius != 0) {
                 int circlesPerDisk = Math.max(1,(int)(maxCirclesPerDisk * (iRadius/radius)));
                 for(double dRadius = 0; dRadius <= iRadius; dRadius += (iRadius)/circlesPerDisk) {
-                    int pointsPerCircle = (int) (maxPointsPerCircle * (dRadius/iRadius));
+                    int pointsPerCircle = Math.max(1,(int) (maxPointsPerCircle * Math.pow(dRadius/iRadius,2)));
                     for(double a = 0; a < Math.PI * 2; a+= Math.PI / pointsPerCircle) {
                         double x = Math.cos(a + i + dRadius) * dRadius;
                         double z = Math.sin(a + i + dRadius) * dRadius;

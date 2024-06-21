@@ -1,7 +1,7 @@
 package com.wagologies.spigotplugin.battle;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
-import com.wagologies.spigotplugin.mob.Mob;
+import com.wagologies.spigotplugin.entity.RPGEntity;
 import com.wagologies.spigotplugin.mob.MobType;
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -19,11 +19,11 @@ public class Battle implements ConfigurationSerializable {
     public void start() {
         for (SpawnLocation spawnLocation : spawnLocations) {
             for (MobType mobType : spawnLocation.mobTypes) {
-                Mob mob = this.battleManager.getPlugin().getMobManager().spawn(mobType, spawnLocation.location);
+                RPGEntity mob = this.battleManager.getPlugin().getEntityManager().spawn(mobType, spawnLocation.location);
                 Vector random = Vector.getRandom();
                 random = random.subtract(new Vector(0.5,0.5,0.5));
                 random = random.setY(0.5);
-                mob.setVelocity(random);
+                mob.getMainEntity().setVelocity(random);
             }
         }
     }

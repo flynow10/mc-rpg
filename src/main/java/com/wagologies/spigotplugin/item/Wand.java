@@ -11,7 +11,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
 
-public class Wand extends CustomItem {
+public class Wand extends RPGItem {
     private static final String CoreTypeKey = "wand-type";
     private static final String LoadedSpellKey = "wand-loaded-spell";
     private WandCoreType coreType;
