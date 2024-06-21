@@ -45,7 +45,6 @@ public class MaleCamper extends NPC {
     protected void setupNPC() {
         SkinTrait skinTrait = citizenNPC.getOrAddTrait(SkinTrait.class);
         skinTrait.setSkinPersistent("MaleCamper", getSkinSignature(), getSkinTexture());
-
     }
 
     @Override
@@ -126,6 +125,7 @@ public class MaleCamper extends NPC {
 
         if(data.containsKey("hasGoneToArena")) {
             hasGoneToArena = (boolean) data.get("hasGoneToArena");
+            setTargetLocation(ARENA_LOCATION.toLocation(getCampaign().getWorld()));
         }
 
         if(data.containsKey("hasGivenIntroItems")) {
