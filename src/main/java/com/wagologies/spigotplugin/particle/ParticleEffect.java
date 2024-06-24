@@ -8,7 +8,7 @@ import org.bukkit.util.Vector;
 
 public abstract class ParticleEffect {
 
-    private final SpigotPlugin plugin;
+    protected final SpigotPlugin plugin;
     public ParticleEffect(SpigotPlugin plugin) {
         this.plugin = plugin;
     }

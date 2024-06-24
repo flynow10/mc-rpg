@@ -6,6 +6,7 @@ import com.wagologies.spigotplugin.particle.CircleEffect;
 import com.wagologies.spigotplugin.particle.Particle;
 import com.wagologies.spigotplugin.spell.BaseSpell;
 import com.wagologies.spigotplugin.spell.SpellManager;
+import com.wagologies.spigotplugin.utils.Quaternion;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
@@ -34,7 +35,7 @@ public class GustOfWind extends BaseSpell {
             return;
         }
         Particle<Vector> windParticle = new Particle<>(org.bukkit.Particle.CLOUD, 0, direction.clone(), null);
-        CircleEffect circleEffect = new CircleEffect(spellManager.getPlugin(), 0.7, direction, 20);
+        CircleEffect circleEffect = new CircleEffect(spellManager.getPlugin(), 0.7, Quaternion.Multiply(Quaternion.LookRotation(direction), Quaternion.FromToRotation(new Vector(0,0,-1), new Vector(0,1,0))), 20);
         circleEffect.draw(windParticle, origin);
 
         if(tickCount % 4 == 0) {

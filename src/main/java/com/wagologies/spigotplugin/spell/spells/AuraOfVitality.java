@@ -9,6 +9,7 @@ import com.wagologies.spigotplugin.player.RPGPlayer;
 import com.wagologies.spigotplugin.spell.BaseSpell;
 import com.wagologies.spigotplugin.spell.SpellManager;
 import com.wagologies.spigotplugin.spell.SpellType;
+import com.wagologies.spigotplugin.utils.Quaternion;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -26,7 +27,7 @@ public class AuraOfVitality extends BaseSpell implements Listener {
     final static int RADIUS = 7;
     public AuraOfVitality(SpellManager spellManager, RPGEntity spellCaster) {
         super(spellManager, spellCaster);
-        effect = new CircleEffect(spellManager.getPlugin(), RADIUS, new Vector(0, 1, 0), 100);
+        effect = new CircleEffect(spellManager.getPlugin(), RADIUS, Quaternion.Identity(), 100);
         particle = new Particle<>(org.bukkit.Particle.SCRAPE, 0, new Vector(0, 10, 0), null);
         getSpellWorld().playSound(spellCaster.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 1f, 1f);
         Bukkit.getPluginManager().registerEvents(this, spellManager.getPlugin());
