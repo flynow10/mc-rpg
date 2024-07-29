@@ -7,6 +7,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.google.common.base.Strings;
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
+import com.wagologies.spigotplugin.campaign.PointOfInterest;
 import com.wagologies.spigotplugin.entity.AbilityScores;
 import com.wagologies.spigotplugin.entity.DamageSource;
 import com.wagologies.spigotplugin.entity.RPGEntity;
@@ -19,6 +20,7 @@ import com.wagologies.spigotplugin.item.Wand;
 import com.wagologies.spigotplugin.spell.SpellCast;
 import com.wagologies.spigotplugin.spell.SpellType;
 import com.wagologies.spigotplugin.utils.SerializeInventory;
+import me.neznamy.tab.api.TabAPI;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -88,27 +90,31 @@ public class RPGPlayer extends RPGEntity {
 
     @Override
     public void die(DamageSource damageSource) {
+        boolean wasInArena = isInArena;
+
         RPGPlayerDeathEvent deathEvent = new RPGPlayerDeathEvent(this, damageSource);
         Bukkit.getPluginManager().callEvent(deathEvent);
-        if(isInArena) {
-            player.sendMessage(ChatColor.RED + "You died!");
-            player.teleport(new Location(player.getWorld(), 626.5, 76, 895.5));
+        player.sendMessage(ChatColor.RED + "You died!");
+
+        if(wasInArena) {
+            player.teleport(PointOfInterest.ARENA_RESPAWN.toLocation(player.getWorld()));
             setHealth(getMaxHealth());
             isInArena = false;
             return;
         }
-
         super.die(damageSource);
     }
 
     @Override
     public void remove(boolean isDead) {
-        super.remove(isDead);
-        player.setDisplayName(player.getName());
-        player.setPlayerListName(player.getName());
-        updateOfflinePlayer();
         if(!isDead) {
+            super.remove(false);
+            player.setDisplayName(player.getName());
+            player.setPlayerListName(player.getName());
+            updateOfflinePlayer();
             playerListener.removeListener();
+        } else {
+            setHealth(getMaxHealth());
         }
     }
 
@@ -270,6 +276,9 @@ public class RPGPlayer extends RPGEntity {
     }
 
     public Location getSaveLocation() {
+        if(isInArena) {
+            return PointOfInterest.ARENA_RESPAWN.toLocation(getWorld());
+        }
         return player.getLocation();
     }
 

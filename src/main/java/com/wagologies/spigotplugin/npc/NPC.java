@@ -19,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 public abstract class NPC implements Listener {
@@ -97,11 +98,12 @@ public abstract class NPC implements Listener {
         return plugin;
     }
 
+    @Nullable
     public Map<String, Object> serialize() {
         return null;
     }
 
-    public void deserialize(Map<String, Object> data) {}
+    public void deserialize(@Nullable Map<String, Object> data) {}
 
 
     @EventHandler

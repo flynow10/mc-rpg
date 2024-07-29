@@ -9,11 +9,10 @@ import com.wagologies.spigotplugin.npc.NPC;
 import com.wagologies.spigotplugin.player.RPGPlayer;
 import com.wagologies.spigotplugin.player.StarterKit;
 import net.citizensnpcs.trait.SkinTrait;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -103,6 +102,7 @@ public class MaleCamper extends NPC {
         );
     }
 
+    @Nullable
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> data = new HashMap<>();
@@ -114,7 +114,7 @@ public class MaleCamper extends NPC {
     }
 
     @Override
-    public void deserialize(Map<String, Object> data) {
+    public void deserialize(@Nullable Map<String, Object> data) {
         if(data == null) {
             return;
         }
