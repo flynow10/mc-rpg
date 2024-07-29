@@ -15,12 +15,15 @@ import java.util.List;
 public class Arena implements Listener {
     private final Campaign campaign;
     private final BoxTrigger entry;
+    private final BoxTrigger exit;
     private final List<RPGPlayer> activePlayers = new ArrayList<>();
     private Mode arenaMode = Mode.TRAINING;
+    
 
     public Arena(Campaign campaign) {
         this.campaign = campaign;
         entry = new BoxTrigger(campaign.getPlugin(), campaign).withBoxSize(617.47, 76.00, 892.44, 623.80, 80.78, 898.53).withActivateMultiple(true).withCallback(this::onEnterArena);
+        exit = new BoxTrigger(campaign.getPlugin(), campaign).withBoxSize(625.50, 76.00, 894.01, 627.03, 78.86, 897.03).withActivateMultiple(true).withCallback(this::onExitArena);
         Bukkit.getPluginManager().registerEvents(this, campaign.getPlugin());
     }
 
@@ -33,9 +36,24 @@ public class Arena implements Listener {
         player.getPlayer().sendMessage(ChatColor.GREEN + "You have entered the arena");
     }
 
+    public void onExitArena(RPGPlayer player) {
+        this.onExitArena(player, true);
+    }
+
+    public void onExitArena(RPGPlayer player, boolean voluntary) {
+        if(!activePlayers.contains(player)) {
+            return;
+        }
+        player.setInArena(false);
+        activePlayers.remove(player);
+        if(voluntary) {
+            player.getPlayer().sendMessage(ChatColor.RED + "You have left the arena");
+        }
+    }
+
     @EventHandler
     public void onPlayerDeath(RPGPlayerDeathEvent event) {
-        activePlayers.remove(event.getRPGPlayer());
+        onExitArena(event.getRPGPlayer(), false);
     }
 
     public enum Mode {
