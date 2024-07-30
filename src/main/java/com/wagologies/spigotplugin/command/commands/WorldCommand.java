@@ -78,7 +78,11 @@ public class WorldCommand extends PlayerCommand {
             case "list": {
                 player.sendMessage(ChatColor.GREEN + "Worlds list");
                 for (World loadedWorld : Bukkit.getWorlds()) {
-                    player.sendMessage(loadedWorld.getName());
+                    if(player.getWorld().equals(loadedWorld)) {
+                        player.sendMessage(loadedWorld.getName() + ChatColor.GREEN + " <-- You are here");
+                    } else {
+                        player.sendMessage(loadedWorld.getName());
+                    }
                 }
                 break;
             }
