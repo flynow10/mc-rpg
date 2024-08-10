@@ -20,9 +20,13 @@ import java.util.EnumSet;
 
 public enum RoomType {
     BANQUET_HALL("banquet_hall", EnumSet.of(Door.WEST), 1),
+    BED_CHAMBERS("bed_chambers", EnumSet.of(Door.EAST), 1),
     CORNER_HALLWAY("corner_hallway", EnumSet.of(Door.WEST, Door.NORTH), 1),
     ICE_BRIDGES("ice_bridges", EnumSet.of(Door.NORTH, Door.SOUTH), 1),
-    MAZE_HALLWAYS("maze_hallways", EnumSet.of(Door.EAST, Door.SOUTH, Door.WEST), 1);
+    MAZE_HALLWAYS("maze_hallways", EnumSet.of(Door.EAST, Door.SOUTH, Door.WEST), 1),
+    STRAIGHT_HALLWAY("straight_hallway", EnumSet.of(Door.NORTH, Door.SOUTH), 1),
+    THREE_HALLWAYS("three_hallways", EnumSet.of(Door.NORTH, Door.EAST, Door.WEST), 1),
+    FOUR_HALLWAYS("four_hallways", Door.ALL_DOORS, 1);
 
     private final String schematicName;
     private final EnumSet<Door> doorDirections;
