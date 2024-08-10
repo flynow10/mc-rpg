@@ -7,14 +7,12 @@ import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.transform.AffineTransform;
-import com.sk89q.worldedit.math.transform.Transform;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import com.wagologies.spigotplugin.utils.Schematics;
 import org.bukkit.Location;
+import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Room {
     public static final int ROOM_SIZE = 50;
@@ -33,7 +31,6 @@ public class Room {
     public void pasteRoom(Location origin, EditSession editSession) throws WorldEditException {
         Location roomLocation = origin.clone().add(this.x * Room.ROOM_SIZE, 0, this.y * Room.ROOM_SIZE);
         Clipboard clipboard = this.type.loadSchematic();
-        ClipboardHolder clipboardHolder = new ClipboardHolder(clipboard);
         int x = roomLocation.getBlockX();
         int z = roomLocation.getBlockZ();
         if(this.rotation == Rotation.DEG_90) {
@@ -44,24 +41,43 @@ public class Room {
         } else if(this.rotation == Rotation.DEG_270) {
             z += ROOM_SIZE - 1;
         }
-        clipboardHolder.setTransform(new AffineTransform().rotateY(360 - this.rotation.getDegrees()));
-        System.out.println(this + ", x: " + x + ", z: " + z);
-        Operation operation = clipboardHolder
-                .createPaste(editSession)
-                .to(BlockVector3.at(x, roomLocation.getBlockY(), z))
-                .copyEntities(true)
-                .build();
-        Operations.complete(operation);
+        AffineTransform transform = new AffineTransform().rotateY(360 - this.rotation.getDegrees());
+        Schematics.PasteSchematic(new Vector(x, roomLocation.getBlockY(), z), clipboard, transform, editSession);
     }
 
-    public static Room CreateRoomFromDoors(int x, int y, EnumSet<Door> doors) {
-        return CreateRoomFromDoors(x, y, doors, new Random());
+    public int getX() {
+        return x;
     }
 
-    public static Room CreateRoomFromDoors(int x, int y, EnumSet<Door> doors, Random random) {
+    public int getY() {
+        return y;
+    }
+
+    public RoomType getType() {
+        return type;
+    }
+
+    public Rotation getRotation() {
+        return rotation;
+    }
+
+    public static Room CreateRoomFromDoors(int x, int y, EnumSet<Door> doors, HashMap<RoomType, Integer> roomUses, int floor) {
+        return CreateRoomFromDoors(x, y, doors, roomUses, floor, new Random());
+    }
+
+    public static Room CreateRoomFromDoors(int x, int y, EnumSet<Door> doors, HashMap<RoomType, Integer> roomUses, int floor, Random random) {
         Door.Configuration configuration = Door.Configuration.ConfigurationFromDoors(doors);
         List<Room> rooms = new ArrayList<>();
         for (RoomType roomType : RoomType.values()) {
+            RoomTypeInfo roomInfo = roomType.getInfo();
+            if(roomInfo.floor() != floor) {
+                continue;
+            }
+            if(roomUses.containsKey(roomType) && roomInfo.maxPerDungeon() != -1) {
+                if(roomUses.get(roomType) >= roomInfo.maxPerDungeon()) {
+                    continue;
+                }
+            }
             if(roomType.getConfiguration().equals(configuration)) {
                 Rotation rotation = Door.RotationFromDoors(roomType.getDoorDirections(), doors);
                 rooms.add(new Room(x, y, roomType, rotation));

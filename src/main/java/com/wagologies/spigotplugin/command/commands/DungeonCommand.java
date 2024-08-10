@@ -1,66 +1,80 @@
 package com.wagologies.spigotplugin.command.commands;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
-import com.wagologies.spigotplugin.command.BaseCommand;
-import com.wagologies.spigotplugin.dungeon.generator.Generator;
-import com.wagologies.spigotplugin.dungeon.generator.Maze;
-import com.wagologies.spigotplugin.dungeon.generator.Room;
+import com.wagologies.spigotplugin.campaign.Campaign;
+import com.wagologies.spigotplugin.command.SubCommands;
+import com.wagologies.spigotplugin.dungeon.Dungeon;
+import com.wagologies.spigotplugin.dungeon.DungeonManager;
+import com.wagologies.spigotplugin.player.RPGPlayer;
 import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Consumer;
-import java.util.logging.Logger;
+public class DungeonCommand extends SubCommands {
+    private static final String[] SUB_COMMANDS = {"create", "start", "delete", "tp"};
 
-public class DungeonCommand extends BaseCommand {
     public DungeonCommand(SpigotPlugin plugin) {
         super(plugin, "dungeon");
     }
-
     @Override
-    public boolean execute(@NotNull CommandSender commandSender, @NotNull String s, @NotNull String[] strings) {
-        Generator dungeonGenerator = getGenerator(strings);
-        Consumer<String> sendMessage;
-        if(!(commandSender instanceof Player)) {
-            sendMessage = commandSender::sendMessage;
-        } else {
-            Logger logger = plugin.getLogger();
-            sendMessage = logger::info;
+    public boolean subCommandExecutor(Player player, String s, String[] subCommands) {
+        if(!player.isOp()) {
+            player.sendMessage(ChatColor.RED + "You are not allowed to use this command!");
+            return true;
         }
-        String maze = dungeonGenerator.getMaze().toString();
-        for (String line : maze.split("\n")) {
-            sendMessage.accept(line);
+        RPGPlayer rpgPlayer = plugin.getPlayerManager().getPlayer(player);
+        if(rpgPlayer == null) {
+            player.sendMessage(ChatColor.RED + "This command can't be used right now!");
+            return true;
         }
 
-        for (int i = 0; i < dungeonGenerator.getRooms().length; i++) {
-            for (int j = 0; j < dungeonGenerator.getRooms()[i].length; j++) {
-                Room room = dungeonGenerator.getRooms()[i][j];
-                sendMessage.accept(room.toString());
+        Campaign campaign = rpgPlayer.getCampaign();
+
+        DungeonManager dungeonManager = plugin.getDungeonManager();
+        Dungeon dungeon = dungeonManager.getDungeon(campaign);
+        if(dungeon == null && !subCommands[0].equals("create")) {
+            player.sendMessage(ChatColor.RED + "No dungeon exists in this campaign!");
+            return true;
+        }
+
+        switch (subCommands[0]) {
+            case "create": {
+                if(dungeon != null) {
+                    player.sendMessage(ChatColor.RED + "A dungeon already exists in this campaign!");
+                    return true;
+                }
+                dungeonManager.createDungeon(campaign, 1);
+                player.sendMessage(ChatColor.GREEN + "Successfully created a new dungeon in " + campaign.getName() + "!");
+                return true;
+            }
+            case "start": {
+                try {
+                    dungeon.start();
+                } catch (IllegalStateException e) {
+                    player.sendMessage(ChatColor.RED + "This dungeon has already been started!");
+                }
+                player.sendMessage(ChatColor.GREEN + "Successfully started a dungeon in " + campaign.getName() + "!");
+                return true;
+            }
+            case "delete": {
+                dungeon.cleanup();
+                player.sendMessage(ChatColor.GREEN + "Successfully deleted a dungeon in " + campaign.getName() + "!");
+                return true;
+            }
+            case "tp": {
+                player.teleport(dungeon.getSpawnLocation());
+                player.sendMessage(ChatColor.GREEN + "Successfully teleported you to the dungeon!");
+                return true;
             }
         }
 
-        if(commandSender instanceof Player player) {
-            dungeonGenerator.pasteDungeon(player.getWorld(), player.getLocation());
-        }
         return true;
     }
 
-    private @NotNull Generator getGenerator(@NotNull String[] strings) {
-        int width = 5;
-        int height = 5;
-        if(strings.length == 1) {
-            try {
-                height = width = Integer.parseInt(strings[0]);
-            } catch (NumberFormatException ignored) {}
-        } else if(strings.length == 2) {
-            try {
-                width = Integer.parseInt(strings[0]);
-            } catch (NumberFormatException ignored) {}
-            try {
-                height = Integer.parseInt(strings[1]);
-            } catch (NumberFormatException ignored) {}
+    @Override
+    public String[] getSubCommands(int argNumber, Player player, String[] args) {
+        if(argNumber == 1) {
+            return SUB_COMMANDS;
         }
-        return new Generator(this.plugin, width, height);
+        return new String[0];
     }
 }

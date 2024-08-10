@@ -52,6 +52,8 @@ public class Maze {
             currentPath.add(index);
             index = nextIndex;
         }
+        int middleX = width / 2;
+        mazeWalls[0][middleX] |= 1; // Add door in middle of north wall
     }
 
     private int getDoorDirection(int nextIndex, int index) {
@@ -78,17 +80,17 @@ public class Maze {
         int y = index / width;
         List<Integer> nextCells = new ArrayList<>();
         int[] idxDeltas = new int[]{-1, 1, -width, width};
-        for(int i = 0; i < idxDeltas.length; i++) {
-            int nextIndex = index + idxDeltas[i];
-            if(nextIndex >= width * height || nextIndex < 0) {
+        for (int idxDelta : idxDeltas) {
+            int nextIndex = index + idxDelta;
+            if (nextIndex >= width * height || nextIndex < 0) {
                 continue;
             }
             int nextX = nextIndex % width;
             int nextY = nextIndex / width;
-            if(Math.abs(x - nextX) + Math.abs(y - nextY) != 1) {
+            if (Math.abs(x - nextX) + Math.abs(y - nextY) != 1) {
                 continue;
             }
-            if(visitedCells.contains(nextIndex) || currentPath.contains(nextIndex)) {
+            if (visitedCells.contains(nextIndex) || currentPath.contains(nextIndex)) {
                 continue;
             }
             nextCells.add(nextIndex);

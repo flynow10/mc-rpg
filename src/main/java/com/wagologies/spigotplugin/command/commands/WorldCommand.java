@@ -3,6 +3,7 @@ package com.wagologies.spigotplugin.command.commands;
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.battle.Battle;
 import com.wagologies.spigotplugin.command.PlayerCommand;
+import com.wagologies.spigotplugin.command.SubCommands;
 import com.wagologies.spigotplugin.utils.WorldHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -19,27 +20,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class WorldCommand extends PlayerCommand {
+public class WorldCommand extends SubCommands {
     private static final String[] SUB_COMMANDS = {"tp", "load", "create", "list"};
     public WorldCommand(SpigotPlugin plugin) {
         super(plugin, "world");
     }
 
     @Override
-    public boolean playerExecutor(Player player, String s, String[] strings) {
-        if(strings.length < 1 || (strings.length < 2 && !strings[0].equals("list"))) {
+    public boolean subCommandExecutor(Player player, String s, String[] subCommands) {
+        if(subCommands.length < 1 || (subCommands.length < 2 && !subCommands[0].equals("list"))) {
             player.sendMessage(ChatColor.RED + "Too few arguments!");
             return true;
         }
-        if(Arrays.stream(SUB_COMMANDS).noneMatch(cmd -> Objects.equals(strings[0], cmd))) {
-            player.sendMessage(ChatColor.RED + "Invalid sub command!");
-            return true;
-        }
         World world = null;
-        if(strings.length >= 2) {
-            world = Bukkit.getWorld(strings[1]);
+        if(subCommands.length >= 2) {
+            world = Bukkit.getWorld(subCommands[1]);
         }
-        switch (strings[0]) {
+        switch (subCommands[0]) {
             case "tp": {
                 if(world == null) {
                     player.sendMessage(ChatColor.RED + "This world is not loaded!");
@@ -55,7 +52,7 @@ public class WorldCommand extends PlayerCommand {
                     break;
                 }
                 try {
-                    World newWorld = WorldHelper.loadWorld(strings[1]);
+                    World newWorld = WorldHelper.loadWorld(subCommands[1]);
                     player.sendMessage(ChatColor.GREEN + "Loaded world " + newWorld.getName());
                 } catch (RuntimeException e) {
                     player.sendMessage(ChatColor.RED + e.getMessage());
@@ -68,7 +65,7 @@ public class WorldCommand extends PlayerCommand {
                     break;
                 }
                 try {
-                    World newWorld = WorldHelper.createCampaignWorld(strings[1]);
+                    World newWorld = WorldHelper.createCampaignWorld(subCommands[1]);
                     player.sendMessage(ChatColor.GREEN + "Created a new campaign world " + newWorld.getName());
                 } catch (RuntimeException e) {
                     player.sendMessage(ChatColor.RED + e.getMessage());
@@ -91,14 +88,12 @@ public class WorldCommand extends PlayerCommand {
     }
 
     @Override
-    public List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException {
-        final List<String> completions = new ArrayList<>();
-        if(args.length == 1) {
-            StringUtil.copyPartialMatches(args[0], List.of(SUB_COMMANDS), completions);
+    public String[] getSubCommands(int argNumber, Player player, String[] args) {
+        if(argNumber == 1) {
+            return SUB_COMMANDS;
+        } else if(argNumber == 2 && args[0].equals("tp")) {
+            return Bukkit.getWorlds().stream().map(WorldInfo::getName).toArray(String[]::new);
         }
-        if(args.length == 2 && args[0].equals("tp")) {
-            StringUtil.copyPartialMatches(args[1], Bukkit.getWorlds().stream().map(WorldInfo::getName).toList(), completions);
-        }
-        return completions;
+        return new String[0];
     }
 }

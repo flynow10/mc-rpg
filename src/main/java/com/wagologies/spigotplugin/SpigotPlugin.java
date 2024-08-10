@@ -6,6 +6,7 @@ import com.wagologies.spigotplugin.battle.BattleManager;
 import com.wagologies.spigotplugin.campaign.Campaign;
 import com.wagologies.spigotplugin.campaign.CampaignManager;
 import com.wagologies.spigotplugin.command.BaseCommand;
+import com.wagologies.spigotplugin.dungeon.DungeonManager;
 import com.wagologies.spigotplugin.entity.EntityManager;
 import com.wagologies.spigotplugin.entity.RPGEntity;
 import com.wagologies.spigotplugin.item.ItemManager;
@@ -33,6 +34,7 @@ public class SpigotPlugin extends JavaPlugin {
     private ItemManager itemManager;
     private SpellManager spellManager;
     private LobbyManager lobbyManager;
+    private DungeonManager dungeonManager;
     private SpiGUI guiManager;
     private NPCRegistry npcRegistry;
     @Override
@@ -43,6 +45,7 @@ public class SpigotPlugin extends JavaPlugin {
         npcRegistry = CitizensAPI.createAnonymousNPCRegistry(new MemoryNPCDataStore());
         campaignManager = new CampaignManager(this);
         lobbyManager = new LobbyManager(this);
+        dungeonManager = new DungeonManager(this);
         playerManager = new PlayerManager(this);
         entityManager = new EntityManager(this);
         battleManager = new BattleManager(this);
@@ -65,6 +68,7 @@ public class SpigotPlugin extends JavaPlugin {
         for (RPGEntity entity : new ArrayList<>(entityManager.getEntities())) {
             entity.remove(false);
         }
+        dungeonManager.cleanupDungeons();
         campaignManager.saveCampaigns();
         battleManager.saveBattles();
     }
@@ -92,6 +96,9 @@ public class SpigotPlugin extends JavaPlugin {
     }
     public LobbyManager getLobbyManager() {
         return lobbyManager;
+    }
+    public DungeonManager getDungeonManager() {
+        return dungeonManager;
     }
     public SpiGUI getGuiManager() {
         return guiManager;
