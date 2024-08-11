@@ -6,6 +6,7 @@ import com.wagologies.spigotplugin.campaign.PointOfInterest;
 import com.wagologies.spigotplugin.dungeon.generator.Generator;
 import com.wagologies.spigotplugin.dungeon.generator.Room;
 import com.wagologies.spigotplugin.player.RPGPlayer;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -21,6 +22,8 @@ public class Dungeon {
     private final Generator dungeonGenerator;
     private final Campaign campaign;
 
+    private boolean isLoaded = false;
+
     public Dungeon(SpigotPlugin plugin, Campaign campaign, int floor) {
         this(plugin, null, campaign, floor);
     }
@@ -33,14 +36,29 @@ public class Dungeon {
         this.campaign = campaign;
     }
 
+    public void pasteDungeon() {
+        World world = campaign.getWorld();
+        dungeonGenerator.pasteDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world));
+        isLoaded = true;
+    }
+
     public void start() {
         if(state != DungeonState.PreStart) {
             throw new IllegalStateException("Cannot start a dungeon after it has already started");
         }
+        if(!isLoaded) {
+            for(RPGPlayer player : players) {
+                player.getPlayer().sendMessage(ChatColor.GREEN + "The dungeon will start momentarily...");
+            }
+            pasteDungeon();
+        }
 
-        World world = campaign.getWorld();
-        dungeonGenerator.pasteDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world));
         state = DungeonState.Running;
+
+        for(RPGPlayer player : players) {
+            player.getPlayer().teleport(getSpawnLocation());
+            player.setInDungeon(true);
+        }
     }
 
     public void cleanup() {
@@ -49,6 +67,10 @@ public class Dungeon {
         }
         World world = campaign.getWorld();
         dungeonGenerator.cleanupDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world));
+        for(RPGPlayer player : players) {
+            player.setInDungeon(false);
+        }
+        state = DungeonState.CleanedUp;
     }
 
     public DungeonState getState() {
@@ -57,6 +79,14 @@ public class Dungeon {
 
     public Campaign getCampaign() {
         return campaign;
+    }
+
+    public List<RPGPlayer> getPlayers() {
+        return players;
+    }
+
+    public int getFloor() {
+        return floor;
     }
 
     public Location getSpawnLocation() {

@@ -4,9 +4,10 @@ public enum DungeonState {
     PreStart,
     Running,
     Failed,
-    Succeeded;
+    Succeeded,
+    CleanedUp;
 
     public boolean isFinished() {
-        return this == DungeonState.Failed || this == DungeonState.Succeeded;
+        return this == DungeonState.Failed || this == DungeonState.Succeeded || this == DungeonState.CleanedUp;
     }
 }

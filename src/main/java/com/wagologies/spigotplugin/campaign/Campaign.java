@@ -56,6 +56,7 @@ public class Campaign implements ConfigurationSerializable {
         WeaponsMerchant weaponsMerchant = new WeaponsMerchant(getPlugin(), this);
         WizardMerchant wizardMerchant = new WizardMerchant(getPlugin(), this);
         VillageStatue villageStatue = new VillageStatue(getPlugin(), this);
+        OutsideCastleGuard outsideCastleGuard = new OutsideCastleGuard(getPlugin(), this);
 
         npcs.add(captain);
         npcs.add(femaleCamper);
@@ -64,6 +65,7 @@ public class Campaign implements ConfigurationSerializable {
         npcs.add(weaponsMerchant);
         npcs.add(wizardMerchant);
         npcs.add(villageStatue);
+        npcs.add(outsideCastleGuard);
 
         this.deserializeNPCs(this.npcData);
 

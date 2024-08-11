@@ -20,7 +20,6 @@ import com.wagologies.spigotplugin.item.Wand;
 import com.wagologies.spigotplugin.spell.SpellCast;
 import com.wagologies.spigotplugin.spell.SpellType;
 import com.wagologies.spigotplugin.utils.SerializeInventory;
-import me.neznamy.tab.api.TabAPI;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -45,6 +44,7 @@ public class RPGPlayer extends RPGEntity {
     private StarterKit starterKit;
     private boolean isInConversation = false;
     private boolean isInArena = false;
+    private boolean isInDungeon = false;
 
     public RPGPlayer(Player player, SpigotPlugin plugin, Campaign campaign) {
         super(plugin);
@@ -279,6 +279,9 @@ public class RPGPlayer extends RPGEntity {
         if(isInArena) {
             return PointOfInterest.ARENA_RESPAWN.toLocation(getWorld());
         }
+        if(isInDungeon) {
+            return PointOfInterest.DUNGEON_EXIT_POINT.toLocation(getWorld());
+        }
         return player.getLocation();
     }
 
@@ -387,5 +390,14 @@ public class RPGPlayer extends RPGEntity {
 
     public void setInArena(boolean inArena) {
         isInArena = inArena;
+    }
+
+    public boolean isInDungeon() {
+        return isInDungeon;
+    }
+
+    public RPGPlayer setInDungeon(boolean inDungeon) {
+        isInDungeon = inDungeon;
+        return this;
     }
 }

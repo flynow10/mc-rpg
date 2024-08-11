@@ -1,38 +1,61 @@
 package com.wagologies.spigotplugin.npc;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
+import com.wagologies.spigotplugin.event.ConversationInteractionEvent;
 import com.wagologies.spigotplugin.player.RPGPlayer;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.apache.commons.lang3.function.TriConsumer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
 import javax.annotation.RegEx;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 public class Conversation {
     private final List<ConversationStep> steps;
     private final List<RPGPlayer> listeningPlayers = new ArrayList<>();
     private int currentStep = -1;
     private boolean isRunning = false;
-    public Conversation(ConversationStep ...steps) {
+
+    public Conversation(ConversationStep... steps) {
         this.steps = List.of(steps);
     }
 
     private void runConversation(NPC npc, SpigotPlugin plugin) {
-        int totalTime = 0;
         this.currentStep = -1;
         this.isRunning = true;
-        for (Conversation.ConversationStep step : getSteps()) {
+        runConversationPart(npc, plugin, 0);
+    }
+
+    private void runConversationPart(NPC npc, SpigotPlugin plugin, int startFrom) {
+        int totalTime = 0;
+        for (int i = startFrom; i < steps.size(); i++) {
+            ConversationStep step = steps.get(i);
+            if (step instanceof InteractionStep interactionStep) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    currentStep += 1;
+                    interactionStep.addAfterInteractionListener(() -> runConversationPart(npc, plugin, currentStep + 1));
+                    interactionStep.run(listeningPlayers, npc, this);
+                }, totalTime);
+                return;
+            }
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 currentStep += 1;
                 step.run(listeningPlayers, npc, this);
             }, totalTime);
-            totalTime += 10; //step.getDuration();
+            totalTime += step.getDuration();
         }
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             for (RPGPlayer rpgPlayer : listeningPlayers) {
@@ -45,18 +68,18 @@ public class Conversation {
     }
 
     public void addPlayer(RPGPlayer player, NPC npc, SpigotPlugin plugin) {
-        if(listeningPlayers.contains(player)) {
+        if (listeningPlayers.contains(player)) {
             return;
         }
         listeningPlayers.add(player);
         player.setInConversation(true);
-        if(isRunning) {
+        if (isRunning) {
             for (int i = 0; i <= currentStep; i++) {
                 ConversationStep step = getSteps().get(i);
-                if(step instanceof Speak speak) {
-                        speak.speakToPlayer(player, npc, this);
+                if (step instanceof Speak speak) {
+                    speak.speakToPlayer(player, npc, this);
                 }
-                if(step instanceof PlayerLookAtNPC lookAtNPC) {
+                if (step instanceof PlayerLookAtNPC lookAtNPC) {
                     lookAtNPC.playerLook(player, npc);
                 }
             }
@@ -71,7 +94,54 @@ public class Conversation {
 
     public static abstract class ConversationStep {
         public abstract void run(List<RPGPlayer> players, NPC npc, Conversation conversation);
+
         public abstract int getDuration();
+    }
+
+    public static abstract class InteractionStep extends ConversationStep implements Listener {
+        protected final String interactionId;
+        private List<Runnable> listeners = new ArrayList<>();
+
+        public InteractionStep(SpigotPlugin plugin) {
+            interactionId = UUID.randomUUID().toString();
+            Bukkit.getPluginManager().registerEvents(this, plugin);
+        }
+
+        protected abstract void sendInteraction(RPGPlayer player, NPC npc, Conversation conversation);
+
+        protected abstract void onReceiveInteraction(ConversationInteractionEvent event);
+
+        protected void finishedInteraction() {
+            for (Runnable runnable : listeners) {
+                runnable.run();
+            }
+            HandlerList.unregisterAll(this);
+        }
+
+        @EventHandler
+        public void _internalReceiveInteraction(ConversationInteractionEvent event) {
+            if (event.getInteractionId().equals(interactionId)) {
+                onReceiveInteraction(event);
+            }
+        }
+
+        public void addAfterInteractionListener(Runnable runnable) {
+            listeners.add(runnable);
+        }
+
+        @Override
+        public void run(List<RPGPlayer> players, NPC npc, Conversation conversation) {
+            if (players.size() != 1) {
+                throw new RuntimeException("Interactions can only have one player!");
+            }
+
+            sendInteraction(players.getFirst(), npc, conversation);
+        }
+
+        @Override
+        public int getDuration() {
+            return -1;
+        }
     }
 
     public static class Speak extends ConversationStep {
@@ -88,6 +158,7 @@ public class Conversation {
         public Speak(String text, @Nullable String customName) {
             this(text, customName, null);
         }
+
         public Speak(String text, @Nullable Integer customDuration) {
             this(text, null, customDuration);
         }
@@ -106,13 +177,17 @@ public class Conversation {
         }
 
         public void speakToPlayer(RPGPlayer player, NPC npc, Conversation conversation) {
-            List<Speak> speakSteps = conversation.getSteps().stream().filter(step -> step instanceof Speak).map(step -> (Speak)step).toList();
+            List<Speak> speakSteps = conversation.getSteps()
+                    .stream()
+                    .filter(step -> step instanceof Speak)
+                    .map(step -> (Speak) step)
+                    .toList();
             int index = speakSteps.indexOf(this);
             String formattedMessage = formatText(player, npc, conversation);
-            if(index != 0) {
+            if (index != 0) {
                 player.getPlayer().sendMessage("");
             }
-            if(customName == null) {
+            if (customName == null) {
                 npc.speakToPlayer(player.getPlayer(), formattedMessage, index + 1, speakSteps.size());
             } else {
                 npc.speakToPlayer(player.getPlayer(), formattedMessage, index + 1, speakSteps.size(), customName);
@@ -120,8 +195,9 @@ public class Conversation {
         }
 
         public String formatText(RPGPlayer player, NPC npc, Conversation conversation) {
-            record Replacer(@RegEx String regex, String replacement) {}
-            Replacer[] replacers = new Replacer[] {
+            record Replacer(@RegEx String regex, String replacement) {
+            }
+            Replacer[] replacers = new Replacer[]{
                     new Replacer("\\{player}", player.getName())
             };
             String formatted = text;
@@ -133,11 +209,11 @@ public class Conversation {
 
         @Override
         public int getDuration() {
-            if(customDuration != null) {
+            if (customDuration != null) {
                 return customDuration;
             }
             int wordCount = text.length() - text.replaceAll(" ", "").length() + 1;
-            return Math.round((wordCount / ((float)1/6))) + 10;
+            return Math.round((wordCount / ((float) 1 / 6))) + 10;
         }
 
         public String getText() {
@@ -220,12 +296,12 @@ public class Conversation {
             for (RPGPlayer player : players) {
                 averageLocation.add(player.getLocation().toVector());
             }
-            averageLocation.multiply(1/players.size());
+            averageLocation.multiply(1 / players.size());
             World world = npc.getLocation().getWorld();
             assert world != null;
             Vector toPlayer = averageLocation.subtract(npc.getLocation().toVector());
             double length = toPlayer.length();
-            Location target = npc.getLocation().add(toPlayer.multiply(Math.max(0,length - 3)/length));
+            Location target = npc.getLocation().add(toPlayer.multiply(Math.max(0, length - 3) / length));
             int highestY = world.getHighestBlockYAt(target);
             target.setY(highestY + 1);
 
@@ -249,6 +325,7 @@ public class Conversation {
                 playerLook(player, npc);
             }
         }
+
         public void playerLook(RPGPlayer player, NPC npc) {
             //Clone the loc to prevent applied changes to the input loc
             Location lookAt = npc.getLocation().clone();
@@ -288,6 +365,57 @@ public class Conversation {
         @Override
         public int getDuration() {
             return 0;
+        }
+    }
+
+    public static class YesNo extends InteractionStep {
+
+        public final Consumer<RPGPlayer> onAccept;
+        public final Consumer<RPGPlayer> onDeny;
+        public final String acceptText;
+        public final String denyText;
+
+        public YesNo(SpigotPlugin plugin, Consumer<RPGPlayer> onAccept, Consumer<RPGPlayer> onDeny) {
+            this(plugin, onAccept, onDeny, "Accept", "Deny");
+        }
+
+        public YesNo(SpigotPlugin plugin, Consumer<RPGPlayer> onAccept, Consumer<RPGPlayer> onDeny, String acceptText, String denyText) {
+            super(plugin);
+            this.onAccept = onAccept;
+            this.onDeny = onDeny;
+            this.acceptText = acceptText;
+            this.denyText = denyText;
+        }
+
+        @Override
+        protected void sendInteraction(RPGPlayer player, NPC npc, Conversation conversation) {
+            String acceptCommand = "/conversation " + this.interactionId + " yes";
+            String denyCommand = "/conversation " + this.interactionId + " no";
+            player.getPlayer().sendMessage("");
+            BaseComponent chatQuestion = new ComponentBuilder()
+                    .append("[" + acceptText + "]")
+                    .color(ChatColor.GREEN).bold(true)
+                    .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, acceptCommand))
+                    .append("   ")
+                    .append("[" + denyText + "]")
+                    .color(ChatColor.RED).bold(true)
+                    .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, denyCommand))
+                    .build();
+            player.getPlayer().spigot().sendMessage(chatQuestion);
+        }
+
+        @Override
+        protected void onReceiveInteraction(ConversationInteractionEvent event) {
+            String response = event.getResponse();
+            if(response.equals("yes")) {
+                onAccept.accept(event.getPlayer());
+            } else if(response.equals("no")) {
+                onDeny.accept(event.getPlayer());
+            } else {
+                event.getPlayer().getPlayer().sendMessage(ChatColor.RED + "Invalid response for this interaction!");
+                return;
+            }
+            finishedInteraction();
         }
     }
 
