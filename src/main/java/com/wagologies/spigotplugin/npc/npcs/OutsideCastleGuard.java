@@ -3,6 +3,7 @@ package com.wagologies.spigotplugin.npc.npcs;
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
 import com.wagologies.spigotplugin.dungeon.Dungeon;
+import com.wagologies.spigotplugin.dungeon.DungeonState;
 import com.wagologies.spigotplugin.event.RPGClickNPCEvent;
 import com.wagologies.spigotplugin.npc.Conversation;
 import com.wagologies.spigotplugin.npc.NPC;
@@ -46,6 +47,7 @@ public class OutsideCastleGuard extends NPC {
     @Override
     public void onInteract(RPGClickNPCEvent event) {
         RPGPlayer player = event.getRPGPlayer();
+
         if (!hasBeenIntroduced) {
             introduction.addPlayer(player, this, getPlugin());
             return;
@@ -53,6 +55,14 @@ public class OutsideCastleGuard extends NPC {
 
         if(dungeon == null || dungeon.getState().isFinished()) {
             dungeon = getPlugin().getDungeonManager().createDungeon(getCampaign(), 1);
+        }
+
+        if(dungeon.getState() == DungeonState.Running) {
+            new Conversation(
+                    new Conversation.Speak("Be careful! A party already went into the castle."),
+                    new Conversation.Speak("It's much to dangerous to enter the door while they're fighting, so you'll have to wait until they come back.")
+            ).addPlayer(player, this, getPlugin());
+            return;
         }
 
         List<RPGPlayer> dungeonPlayers = dungeon.getPlayers();

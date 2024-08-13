@@ -35,7 +35,7 @@ public class DungeonManager {
     }
 
     public void cleanupDungeons() {
-        for (Dungeon dungeon : dungeons) {
+        for (Dungeon dungeon : new ArrayList<>(dungeons)) {
             dungeon.cleanup();
         }
     }

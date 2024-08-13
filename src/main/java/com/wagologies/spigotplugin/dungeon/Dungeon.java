@@ -5,6 +5,7 @@ import com.wagologies.spigotplugin.campaign.Campaign;
 import com.wagologies.spigotplugin.campaign.PointOfInterest;
 import com.wagologies.spigotplugin.dungeon.generator.Generator;
 import com.wagologies.spigotplugin.dungeon.generator.Room;
+import com.wagologies.spigotplugin.entity.RPGEntity;
 import com.wagologies.spigotplugin.player.RPGPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -21,6 +22,7 @@ public class Dungeon {
     private final int floor;
     private final Generator dungeonGenerator;
     private final Campaign campaign;
+    private final List<RPGEntity> entities = new ArrayList<>();
 
     private boolean isLoaded = false;
 
@@ -48,7 +50,7 @@ public class Dungeon {
         }
         if(!isLoaded) {
             for(RPGPlayer player : players) {
-                player.getPlayer().sendMessage(ChatColor.GREEN + "The dungeon will start momentarily...");
+                player.getPlayer().sendMessage(ChatColor.GREEN + "The castle will open momentarily...");
             }
             pasteDungeon();
         }
@@ -59,6 +61,8 @@ public class Dungeon {
             player.getPlayer().teleport(getSpawnLocation());
             player.setInDungeon(true);
         }
+
+        spawnMobs();
     }
 
     public void cleanup() {
@@ -70,7 +74,21 @@ public class Dungeon {
         for(RPGPlayer player : players) {
             player.setInDungeon(false);
         }
+        for(RPGEntity entity : entities) {
+            entity.remove(false);
+        }
         state = DungeonState.CleanedUp;
+    }
+
+    private void spawnMobs() {
+        World world = campaign.getWorld();
+        Location dungeonOrigin = PointOfInterest.DUNGEON_GENERATION.toLocation(world);
+        Room[][] rooms = dungeonGenerator.getRooms();
+        for (Room[] row : rooms) {
+            for (Room room : row) {
+                entities.addAll(room.spawnMobs(plugin, dungeonOrigin));
+            }
+        }
     }
 
     public DungeonState getState() {

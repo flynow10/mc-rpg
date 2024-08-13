@@ -7,6 +7,8 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 import org.apache.commons.lang3.function.TriConsumer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -396,10 +398,12 @@ public class Conversation {
                     .append("[" + acceptText + "]")
                     .color(ChatColor.GREEN).bold(true)
                     .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, acceptCommand))
+                    .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(acceptText)))
                     .append("   ")
                     .append("[" + denyText + "]")
                     .color(ChatColor.RED).bold(true)
                     .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, denyCommand))
+                    .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(denyText)))
                     .build();
             player.getPlayer().spigot().sendMessage(chatQuestion);
         }
