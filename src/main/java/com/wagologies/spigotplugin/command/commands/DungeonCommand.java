@@ -10,7 +10,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class DungeonCommand extends SubCommands {
-    private static final String[] SUB_COMMANDS = {"create", "start", "delete", "tp"};
+    private static final String[] SUB_COMMANDS = {"create", "start", "delete", "tp", "join"};
 
     public DungeonCommand(SpigotPlugin plugin) {
         super(plugin, "dungeon");
@@ -40,11 +40,11 @@ public class DungeonCommand extends SubCommands {
             case "create": {
                 if(dungeon != null) {
                     player.sendMessage(ChatColor.RED + "A dungeon already exists in this campaign!");
-                    return true;
+                    break;
                 }
                 dungeonManager.createDungeon(campaign, 1);
                 player.sendMessage(ChatColor.GREEN + "Successfully created a new dungeon in " + campaign.getName() + "!");
-                return true;
+                break;
             }
             case "start": {
                 try {
@@ -53,17 +53,22 @@ public class DungeonCommand extends SubCommands {
                     player.sendMessage(ChatColor.RED + "This dungeon has already been started!");
                 }
                 player.sendMessage(ChatColor.GREEN + "Successfully started a dungeon in " + campaign.getName() + "!");
-                return true;
+                break;
             }
             case "delete": {
                 dungeon.cleanup();
                 player.sendMessage(ChatColor.GREEN + "Successfully deleted a dungeon in " + campaign.getName() + "!");
-                return true;
+                break;
             }
             case "tp": {
                 player.teleport(dungeon.getSpawnLocation());
                 player.sendMessage(ChatColor.GREEN + "Successfully teleported you to the dungeon!");
-                return true;
+                break;
+            }
+            case "join": {
+                dungeon.getPlayers().add(rpgPlayer);
+                player.sendMessage(ChatColor.GREEN + "Successfully joined the dungeon!");
+                break;
             }
         }
 

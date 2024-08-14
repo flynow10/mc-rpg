@@ -17,6 +17,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 
 import javax.annotation.Nullable;
@@ -52,6 +53,11 @@ public abstract class NPC implements Listener {
         hologramTrait.setLineHeight(0.3);
         setupNPC();
         citizenNPC.spawn(getTargetLocation());
+    }
+
+    public void despawn() {
+        citizenNPC.destroy();
+        HandlerList.unregisterAll(this);
     }
 
     public void updateName() {

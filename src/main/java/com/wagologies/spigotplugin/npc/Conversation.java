@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class Conversation {
     private final List<ConversationStep> steps;
@@ -102,7 +103,7 @@ public class Conversation {
 
     public static abstract class InteractionStep extends ConversationStep implements Listener {
         protected final String interactionId;
-        private List<Runnable> listeners = new ArrayList<>();
+        private final List<Runnable> listeners = new ArrayList<>();
 
         public InteractionStep(SpigotPlugin plugin) {
             interactionId = UUID.randomUUID().toString();
@@ -146,27 +147,25 @@ public class Conversation {
         }
     }
 
-    public static class Speak extends ConversationStep {
-        private String text;
+    public static abstract class AbstractSpeak extends ConversationStep {
         @Nullable
         private String customName;
         @Nullable
         private Integer customDuration;
 
-        public Speak(String text) {
-            this(text, null, null);
+        public AbstractSpeak() {
+            this(null, null);
         }
 
-        public Speak(String text, @Nullable String customName) {
-            this(text, customName, null);
+        public AbstractSpeak(@Nullable String customName) {
+            this(customName, null);
         }
 
-        public Speak(String text, @Nullable Integer customDuration) {
-            this(text, null, customDuration);
+        public AbstractSpeak(@Nullable Integer customDuration) {
+            this(null, customDuration);
         }
 
-        public Speak(String text, @Nullable String customName, @Nullable Integer customDuration) {
-            this.text = text;
+        public AbstractSpeak(@Nullable String customName, @Nullable Integer customDuration) {
             this.customName = customName;
             this.customDuration = customDuration;
         }
@@ -179,10 +178,10 @@ public class Conversation {
         }
 
         public void speakToPlayer(RPGPlayer player, NPC npc, Conversation conversation) {
-            List<Speak> speakSteps = conversation.getSteps()
+            List<AbstractSpeak> speakSteps = conversation.getSteps()
                     .stream()
-                    .filter(step -> step instanceof Speak)
-                    .map(step -> (Speak) step)
+                    .filter(step -> step instanceof AbstractSpeak)
+                    .map(step -> (AbstractSpeak) step)
                     .toList();
             int index = speakSteps.indexOf(this);
             String formattedMessage = formatText(player, npc, conversation);
@@ -202,7 +201,7 @@ public class Conversation {
             Replacer[] replacers = new Replacer[]{
                     new Replacer("\\{player}", player.getName())
             };
-            String formatted = text;
+            String formatted = getText();
             for (Replacer replacer : replacers) {
                 formatted = formatted.replaceAll(replacer.regex, replacer.replacement);
             }
@@ -214,17 +213,11 @@ public class Conversation {
             if (customDuration != null) {
                 return customDuration;
             }
-            int wordCount = text.length() - text.replaceAll(" ", "").length() + 1;
+            int wordCount = getText().length() - getText().replaceAll(" ", "").length() + 1;
             return Math.round((wordCount / ((float) 1 / 6))) + 10;
         }
 
-        public String getText() {
-            return text;
-        }
-
-        public void setText(String text) {
-            this.text = text;
-        }
+        public abstract String getText();
 
         @Nullable
         public String getCustomName() {
@@ -242,6 +235,58 @@ public class Conversation {
 
         public void setCustomDuration(@Nullable Integer customDuration) {
             this.customDuration = customDuration;
+        }
+    }
+
+    public static class Speak extends AbstractSpeak {
+        private final String text;
+
+        public Speak(String text) {
+            this(text, null, null);
+        }
+
+        public Speak(String text, @Nullable Integer customDuration) {
+            this(text, null, customDuration);
+        }
+
+        public Speak(String text, @Nullable String customName) {
+            this(text, customName, null);
+        }
+
+        public Speak(String text, @Nullable String customName, @Nullable Integer customDuration) {
+            super(customName, customDuration);
+            this.text = text;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+    }
+
+    public static class SuspendedSpeak extends AbstractSpeak {
+        private final Supplier<String> speechProvider;
+
+        public SuspendedSpeak(Supplier<String> speechProvider) {
+            this(speechProvider, null, null);
+        }
+
+        public SuspendedSpeak(Supplier<String> speechProvider, @Nullable Integer customDuration) {
+            this(speechProvider, null, customDuration);
+        }
+
+        public SuspendedSpeak(Supplier<String> speechProvider, @Nullable String customName) {
+            this(speechProvider, customName, null);
+        }
+
+        public SuspendedSpeak(Supplier<String> speechProvider, @Nullable String customName, @Nullable Integer customDuration) {
+            super(customName, customDuration);
+            this.speechProvider = speechProvider;
+        }
+
+        @Override
+        public String getText() {
+            return speechProvider.get();
         }
     }
 
@@ -346,7 +391,7 @@ public class Conversation {
                 } else {
                     playerLoc.setYaw((float) (0.5 * Math.PI));
                 }
-                playerLoc.setYaw((float) playerLoc.getYaw() - (float) Math.atan(dz / dx));
+                playerLoc.setYaw(playerLoc.getYaw() - (float) Math.atan(dz / dx));
             } else if (dz < 0) {
                 playerLoc.setYaw((float) Math.PI);
             }

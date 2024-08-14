@@ -114,11 +114,11 @@ public class OutsideCastleGuard extends NPC {
         }
     }
 
-    public String getSkinSignature() {
+    public static String getSkinSignature() {
         return "oKYkemKou5Z8QGWFKzr2bTT1N5d8La4xgZLSN/18EO6nDyvix3SIcU7RO3llSwwfd7hYehiKxdhqlbdT3s3gm9eTa5tZsU7cngLIKFLYsGevjtN3VQTVpDq1ZyXRGC84OEY+kjkuTOasOea92HR+iLiT6Zq3yls4SO5rH1FjSgCUoGMwLB0IiDszv0b6qTiCJW0CsqmivEIcMZqW6PTpfrRXxzUG1dg1u41Cmfrntc9hKTqMR7JhX9PLAvhbAYRR2RN5UVPRfnD26l/7v35ClA/IC0tmMkk6NJn7FnKzEVA3o8W/W6mhHAng1O/gbWC+lAPSyoJ+Asi4py+pLfj9PJKgVDH/DECGeUflcTCsMVYsK5vHBpN7J3KTqJD4qsFUg7wuSbzwzCf8vd9ApGN7zv/qcWwKFlawAgJAi50ZAw+MOn6ZBq6mB4Bb8D3Bsqbhezf7LO1+SlEjQIFhpLq5zZHYvHQedtO+mkgksv8Pkb/TOIv/8QDjJap4F5iRNcMhEG6cY+uuwr7ukRnitU7KEbUwjiBjx7CcvdWsGaDUUvjEvGJDW2vrP4R28iASQT4Gzsc3yGOSxjwVmxmI+Z/s59AZS3ykwBo0hLZAIluvz/jRGNVHJKfvEyC0aYzF2WmKy6Fa5oT7iZIoqNeI8hNMDcteRDAfXHXmFePvQhUkmzI=";
     }
 
-    public String getSkinTexture() {
+    public static String getSkinTexture() {
         return "ewogICJ0aW1lc3RhbXAiIDogMTY0OTYxMTczNjk0MCwKICAicHJvZmlsZUlkIiA6ICJlZThjNWMzMGY3NWU0N2QxOTBmOTllNjI5NDgyOGZjMSIsCiAgInByb2ZpbGVOYW1lIiA6ICJTcGFya19QaGFudG9tIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlL2FiMDljNzkzYjg5MmNkODExMWEzZTI3OWFmNTlhMjcxZmJlZTk0OGIzZjNkM2Y2YTkyMWY4MzhiNGQ4YTllODkiCiAgICB9CiAgfQp9";
     }
 }

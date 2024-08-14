@@ -6,6 +6,7 @@ import com.wagologies.spigotplugin.campaign.PointOfInterest;
 import com.wagologies.spigotplugin.dungeon.generator.Generator;
 import com.wagologies.spigotplugin.dungeon.generator.Room;
 import com.wagologies.spigotplugin.entity.RPGEntity;
+import com.wagologies.spigotplugin.npc.npcs.InsideCastleGuard;
 import com.wagologies.spigotplugin.player.RPGPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -23,6 +24,7 @@ public class Dungeon {
     private final Generator dungeonGenerator;
     private final Campaign campaign;
     private final List<RPGEntity> entities = new ArrayList<>();
+    private InsideCastleGuard castleGuard;
 
     private boolean isLoaded = false;
 
@@ -37,13 +39,6 @@ public class Dungeon {
         this.dungeonGenerator = new Generator(plugin, 3, 3, floor);
         this.campaign = campaign;
     }
-
-    public void pasteDungeon() {
-        World world = campaign.getWorld();
-        dungeonGenerator.pasteDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world));
-        isLoaded = true;
-    }
-
     public void start() {
         if(state != DungeonState.PreStart) {
             throw new IllegalStateException("Cannot start a dungeon after it has already started");
@@ -52,7 +47,7 @@ public class Dungeon {
             for(RPGPlayer player : players) {
                 player.getPlayer().sendMessage(ChatColor.GREEN + "The castle will open momentarily...");
             }
-            pasteDungeon();
+            setupDungeon();
         }
 
         state = DungeonState.Running;
@@ -65,12 +60,22 @@ public class Dungeon {
         spawnMobs();
     }
 
+    public void setupDungeon() {
+        pasteDungeon();
+        spawnMobs();
+        setupCastleGuard();
+        isLoaded = true;
+    }
+
     public void cleanup() {
         if(this.dungeonManager != null) {
             this.dungeonManager.removeDungeon(this);
         }
-        World world = campaign.getWorld();
-        dungeonGenerator.cleanupDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world));
+        if(isLoaded) {
+            World world = campaign.getWorld();
+            dungeonGenerator.cleanupDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world));
+            castleGuard.despawn();
+        }
         for(RPGPlayer player : players) {
             player.setInDungeon(false);
         }
@@ -78,6 +83,26 @@ public class Dungeon {
             entity.remove(false);
         }
         state = DungeonState.CleanedUp;
+    }
+
+    public void leaveDungeon(boolean success) {
+        if(success) {
+            state = DungeonState.Succeeded;
+        } else {
+            state = DungeonState.Failed;
+        }
+
+        for (RPGPlayer player : players) {
+            player.setInDungeon(false);
+            player.getPlayer().teleport(PointOfInterest.DUNGEON_EXIT_POINT.toLocation(campaign.getWorld()));
+        }
+
+        cleanup();
+    }
+
+    private void pasteDungeon() {
+        World world = campaign.getWorld();
+        dungeonGenerator.pasteDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world));
     }
 
     private void spawnMobs() {
@@ -89,6 +114,11 @@ public class Dungeon {
                 entities.addAll(room.spawnMobs(plugin, dungeonOrigin));
             }
         }
+    }
+
+    private void setupCastleGuard() {
+        castleGuard = new InsideCastleGuard(plugin, getCampaign(), this);
+        castleGuard.spawn();
     }
 
     public DungeonState getState() {
