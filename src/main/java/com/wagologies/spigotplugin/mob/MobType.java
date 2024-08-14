@@ -11,7 +11,8 @@ public enum MobType {
     SPLIT_SPIDER("Mini Spider", SplitSpider.class),
     DIRE_WOLF("Dire Wolf", DireWolf.class),
     WOLF("Wolf", Wolf.class),
-    DUMMY("Dummy", Dummy.class);
+    DUMMY("Dummy", Dummy.class),
+    ICE_MAGE("Ice Mage", IceMage.class);
 
     private final String name;
     private final Class<? extends AbstractMob> mobClass;
