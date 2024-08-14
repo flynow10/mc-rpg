@@ -8,7 +8,8 @@ public enum PointOfInterest {
     ARENA_RESPAWN(626.5, 76, 895.5, 90, 0),
     NEW_CAMPAIGN(693.5, 65, 939.5, 180, 26),
     DUNGEON_GENERATION(575, 64, 1344, 0, 0),
-    DUNGEON_EXIT_POINT(680.5,205,538.5, 0, 0);
+    DUNGEON_EXIT_POINT(680.5,205,538.5, 0, 0),
+    FLOOR_DISPLAY_HOLOGRAM(678.5,205,538.5, 0, 0);
 
     private double x;
     private double y;

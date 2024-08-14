@@ -54,7 +54,7 @@ public class OutsideCastleGuard extends NPC {
         }
 
         if(dungeon == null || dungeon.getState().isFinished()) {
-            dungeon = getPlugin().getDungeonManager().createDungeon(getCampaign(), 1);
+            dungeon = getPlugin().getDungeonManager().createDungeon(getCampaign());
         }
 
         if(dungeon.getState() == DungeonState.Running) {
@@ -71,19 +71,22 @@ public class OutsideCastleGuard extends NPC {
             String personPlural = dungeonPlayers.size() == 1 ? "person" : "people";
             new Conversation(
                     new Conversation.Speak(
-                            "We've got a party of " + ChatColor.YELLOW + dungeonPlayers.size() + ChatColor.GREEN + " " + personPlural + " now. Are you ready to take on the castle?", 20),
+                            "We've got a party of " + ChatColor.YELLOW + dungeonPlayers.size() + ChatColor.GREEN + " " + personPlural + " now. Are you ready to take on floor " + ChatColor.YELLOW + dungeon.getFloor() + ChatColor.GREEN + " of the castle?", 20),
                     new Conversation.YesNo(getPlugin(), (p) -> startDungeon(), (p) -> {
                     }, "Yes!", "Not yet")
             ).addPlayer(player, this, getPlugin());
         } else {
             new Conversation(
                     new Conversation.Speak("I'm putting together a party to storm this castle, can we count on you to help?", 20),
-                    new Conversation.YesNo(getPlugin(), (p) -> {
-                        dungeonPlayers.add(p);
-                        speakToPlayer(p.getPlayer(), "That's great to hear! If you have anyone else in your party, have them talk to me before we get started.", 1, 1);
-                    }, (p) -> {
-                        speakToPlayer(p.getPlayer(), "Not quite ready? Come back and talk to me when you've prepared.", 1, 1);
-                    }, "Yes!", "Not yet")
+                    new Conversation.YesNo(getPlugin(), dungeonPlayers::add, (p) -> {
+                    }, "Yes!", "Not yet"),
+                    new Conversation.SuspendedSpeak(() -> {
+                        if(dungeonPlayers.contains(player)) {
+                            return "That's great to hear! If you have anyone else in your party, have them talk to me before we get started.";
+                        } else {
+                            return "Not quite ready? Come back and talk to me when you've prepared.";
+                        }
+                    })
             ).addPlayer(player, this, getPlugin());
         }
     }

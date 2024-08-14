@@ -105,6 +105,9 @@ public class Dungeon implements Listener {
 
     public void leaveDungeon(boolean success) {
         if(success) {
+            if(getFloor() > campaign.getLastCompletedFloor()) {
+                campaign.setLastCompletedFloor(getFloor());
+            }
             state = DungeonState.Succeeded;
         } else {
             state = DungeonState.Failed;
@@ -149,7 +152,7 @@ public class Dungeon implements Listener {
             completion = 1 - ((double)liveEnemyCount / enemyCount);
         }
 
-        bossBar.setTitle(ChatColor.RED + "Castle Raid: " + String.format("%.2f", completion) + "%");
+        bossBar.setTitle(ChatColor.RED + "Castle Raid: " + String.format("%.2f", completion * 100) + "%");
         bossBar.setProgress(completion);
     }
 

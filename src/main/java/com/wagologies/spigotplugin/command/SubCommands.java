@@ -29,6 +29,10 @@ public abstract class SubCommands extends PlayerCommand {
                 return true;
             }
         }
+        if(strings.length == 0) {
+            player.sendMessage(ChatColor.RED + "No sub commands specified!");
+            return true;
+        }
 
         return subCommandExecutor(player, s, strings);
     }

@@ -440,6 +440,7 @@ public class Conversation {
             String denyCommand = "/conversation " + this.interactionId + " no";
             player.getPlayer().sendMessage("");
             BaseComponent chatQuestion = new ComponentBuilder()
+                    .append("   ")
                     .append("[" + acceptText + "]")
                     .color(ChatColor.GREEN).bold(true)
                     .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, acceptCommand))
@@ -451,6 +452,7 @@ public class Conversation {
                     .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(denyText)))
                     .build();
             player.getPlayer().spigot().sendMessage(chatQuestion);
+            player.getPlayer().sendMessage("");
         }
 
         @Override

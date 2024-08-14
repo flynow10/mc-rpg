@@ -6,3 +6,4 @@ depend:
   - ProtocolLib
   - Citizens
   - WorldEdit
+  - DecentHolograms

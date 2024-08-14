@@ -21,6 +21,10 @@ public class DungeonManager {
         return dungeon.orElse(null);
     }
 
+    public Dungeon createDungeon(Campaign campaign) {
+        return createDungeon(campaign, campaign.getLastCompletedFloor() + 1);
+    }
+
     public Dungeon createDungeon(Campaign campaign, int floor) {
         if(getDungeon(campaign) != null) {
             throw new RuntimeException("Cannot create a dungeon with the same campaign");

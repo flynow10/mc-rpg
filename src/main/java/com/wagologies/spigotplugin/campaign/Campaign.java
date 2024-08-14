@@ -2,6 +2,7 @@ package com.wagologies.spigotplugin.campaign;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.arena.Arena;
+import com.wagologies.spigotplugin.campaign.holograms.FloorDisplay;
 import com.wagologies.spigotplugin.npc.NPC;
 import com.wagologies.spigotplugin.npc.npcs.*;
 import com.wagologies.spigotplugin.player.OfflinePlayer;
@@ -20,31 +21,37 @@ import java.util.Map;
 
 @SerializableAs("Campaign")
 public class Campaign implements ConfigurationSerializable {
+
+    public static final int CASTLE_FLOOR_COUNT = 8;
     private CampaignManager campaignManager = null;
     private final String name;
     private final World world;
     private final List<OfflinePlayer> players = new ArrayList<>();
+    private int lastCompletedFloor = 0;
     private final List<NPC> npcs = new ArrayList<>();
     private final Map<String, Object> npcData;
     private Arena arena;
+    private FloorDisplay floorDisplay;
 
     public Campaign(String name, List<OfflinePlayer> players) {
-        this(name, players, null);
+        this(name, players, null, 0);
     }
 
-    public Campaign(String name, List<OfflinePlayer> players, Map<String, Object> npcConfiguration) {
-        this(name, WorldHelper.loadWorld(name), players, npcConfiguration);
+    public Campaign(String name, List<OfflinePlayer> players, Map<String, Object> npcConfiguration, int lastCompletedFloor) {
+        this(name, WorldHelper.loadWorld(name), players, npcConfiguration, lastCompletedFloor);
     }
 
-    public Campaign(String name, World world, List<OfflinePlayer> players, Map<String, Object> npcData) {
+    public Campaign(String name, World world, List<OfflinePlayer> players, Map<String, Object> npcData, int lastCompletedFloor) {
         this.name = name;
         this.world = world;
         this.players.addAll(players);
         this.npcData = npcData;
+        this.lastCompletedFloor = lastCompletedFloor;
     }
 
     public void initialize() {
         arena = new Arena(this);
+        floorDisplay = new FloorDisplay(this);
         spawnNPCs();
     }
 
@@ -109,6 +116,16 @@ public class Campaign implements ConfigurationSerializable {
         this.campaignManager = campaignManager;
     }
 
+    public int getLastCompletedFloor() {
+        return lastCompletedFloor;
+    }
+
+    public Campaign setLastCompletedFloor(int lastCompletedFloor) {
+        this.lastCompletedFloor = lastCompletedFloor;
+        floorDisplay.updateHologram();
+        return this;
+    }
+
     public OfflinePlayer getCharacter(Player player) {
         return players.stream().filter(p -> p.getPlayerId().equals(player.getUniqueId().toString())).findFirst().orElse(null);
     }
@@ -152,6 +169,7 @@ public class Campaign implements ConfigurationSerializable {
         map.put("name", name);
         map.put("players", players.stream().map(OfflinePlayer::serialize).toArray());
         map.put("npcs", serializeNPCs());
+        map.put("castleFloor", lastCompletedFloor);
         return map;
     }
 
@@ -160,10 +178,11 @@ public class Campaign implements ConfigurationSerializable {
         WorldHelper.loadWorld(campaignName);
         ArrayList<Map<String, Object>> playerObjects = (ArrayList<Map<String, Object>>) map.get("players");
         List<OfflinePlayer> players = new ArrayList<>();
+        int lastCompletedFloor = (int) map.get("castleFloor");
         for (Map<String, Object> playerObject : playerObjects) {
             players.add(OfflinePlayer.deserialize(playerObject));
         }
-        return new Campaign(campaignName, players, (Map<String, Object>) map.get("npcs"));
+        return new Campaign(campaignName, players, (Map<String, Object>) map.get("npcs"), lastCompletedFloor);
     }
 
     public static void RegisterConfiguration(SpigotPlugin plugin) {
