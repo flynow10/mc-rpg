@@ -9,6 +9,7 @@ import com.wagologies.spigotplugin.npc.NPC;
 import com.wagologies.spigotplugin.player.RPGPlayer;
 import net.citizensnpcs.trait.SkinTrait;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,24 +40,30 @@ public class InsideCastleGuard extends NPC {
     @Override
     public void onInteract(RPGClickNPCEvent event) {
         RPGPlayer player = event.getRPGPlayer();
+        Player bukkitPlayer = event.getPlayer();
         if(!dungeon.getPlayers().contains(player)) {
             return;
         }
 
         if(player.isInCombat()) {
-            speakToPlayer(player.getPlayer(), "Don't talk now! There's more enemies behind you!", 1, 1);
+            speakToPlayer(bukkitPlayer, "Don't talk now! There's more enemies behind you!", 1, 1);
             return;
         }
 
+        if(!dungeon.isDungeonComplete()) {
+           speakToPlayer(bukkitPlayer, "I think I hear more enemies in the dungeon. Make sure to clear this entire floor before we leave!", 1, 1);
+           return;
+        }
+
         new Conversation(
-                new Conversation.Speak("Are you ready to leave this floor of the castle?"),
+                new Conversation.Speak("Are you ready to leave this floor of the castle?", 0),
                 new Conversation.YesNo(getPlugin(), rpgPlayer -> {if(!readyToLeave.contains(rpgPlayer)) readyToLeave.add(rpgPlayer);}, rpgPlayer -> readyToLeave.remove(rpgPlayer)),
                 new Conversation.SuspendedSpeak(() -> {
                     if(readyToLeave.contains(player)) {
                         return "Great! When the rest of your party is ready as well we'll head out.";
                     }
                     return "Just let me know when you're ready to leave!";
-                }),
+                }, 20),
                 new Conversation.CustomRunnable((rpgPlayers, npc, conversation) -> {
                     if(readyToLeave.size() == dungeon.getPlayers().size()) {
                         dungeon.leaveDungeon(true);

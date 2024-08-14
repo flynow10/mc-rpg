@@ -1,10 +1,12 @@
 package com.wagologies.spigotplugin.entity;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
+import com.wagologies.spigotplugin.event.RPGEntityDeathEvent;
 import com.wagologies.spigotplugin.item.Armor;
 import com.wagologies.spigotplugin.item.RPGItem;
 import com.wagologies.spigotplugin.item.MeleeWeapon;
 import com.wagologies.spigotplugin.player.RPGPlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -161,6 +163,8 @@ public abstract class RPGEntity {
     public void die(DamageSource damageSource) {
         if(!dead) {
             dead = true;
+            RPGEntityDeathEvent event = new RPGEntityDeathEvent(this, damageSource);
+            Bukkit.getPluginManager().callEvent(event);
             remove(true);
         }
     }

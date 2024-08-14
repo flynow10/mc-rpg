@@ -6,16 +6,27 @@ import com.wagologies.spigotplugin.campaign.PointOfInterest;
 import com.wagologies.spigotplugin.dungeon.generator.Generator;
 import com.wagologies.spigotplugin.dungeon.generator.Room;
 import com.wagologies.spigotplugin.entity.RPGEntity;
+import com.wagologies.spigotplugin.event.RPGEntityDeathEvent;
 import com.wagologies.spigotplugin.npc.npcs.InsideCastleGuard;
 import com.wagologies.spigotplugin.player.RPGPlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Dungeon {
+public class Dungeon implements Listener {
     private final SpigotPlugin plugin;
     private final DungeonManager dungeonManager;
     private DungeonState state = DungeonState.PreStart;
@@ -24,6 +35,7 @@ public class Dungeon {
     private final Generator dungeonGenerator;
     private final Campaign campaign;
     private final List<RPGEntity> entities = new ArrayList<>();
+    private final BossBar bossBar;
     private InsideCastleGuard castleGuard;
 
     private boolean isLoaded = false;
@@ -38,7 +50,11 @@ public class Dungeon {
         this.floor = floor;
         this.dungeonGenerator = new Generator(plugin, 3, 3, floor);
         this.campaign = campaign;
+        this.bossBar = Bukkit.createBossBar(ChatColor.RED + "Castle Raid: 0%", BarColor.BLUE, BarStyle.SOLID);
+        updateBossBar();
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
+
     public void start() {
         if(state != DungeonState.PreStart) {
             throw new IllegalStateException("Cannot start a dungeon after it has already started");
@@ -49,20 +65,20 @@ public class Dungeon {
             }
             setupDungeon();
         }
+        spawnMobs();
 
         state = DungeonState.Running;
 
         for(RPGPlayer player : players) {
             player.getPlayer().teleport(getSpawnLocation());
             player.setInDungeon(true);
+            bossBar.addPlayer(player.getPlayer());
         }
-
-        spawnMobs();
+        bossBar.setVisible(true);
     }
 
     public void setupDungeon() {
         pasteDungeon();
-        spawnMobs();
         setupCastleGuard();
         isLoaded = true;
     }
@@ -79,6 +95,8 @@ public class Dungeon {
         for(RPGPlayer player : players) {
             player.setInDungeon(false);
         }
+        bossBar.removeAll();
+        bossBar.setVisible(false);
         for(RPGEntity entity : entities) {
             entity.remove(false);
         }
@@ -119,6 +137,35 @@ public class Dungeon {
     private void setupCastleGuard() {
         castleGuard = new InsideCastleGuard(plugin, getCampaign(), this);
         castleGuard.spawn();
+    }
+
+    private void updateBossBar() {
+        int enemyCount = entities.size();
+        int liveEnemyCount = getLiveEntities();
+        double completion;
+        if(enemyCount == 0) {
+            completion = 0;
+        } else {
+            completion = 1 - ((double)liveEnemyCount / enemyCount);
+        }
+
+        bossBar.setTitle(ChatColor.RED + "Castle Raid: " + String.format("%.2f", completion) + "%");
+        bossBar.setProgress(completion);
+    }
+
+    @EventHandler
+    public void onEntityDeath(RPGEntityDeathEvent event) {
+        if(entities.contains(event.getEntity())) {
+            updateBossBar();
+        }
+    }
+
+    public int getLiveEntities() {
+        return (int) entities.stream().filter((entity) -> !entity.isDead()).count();
+    }
+
+    public boolean isDungeonComplete() {
+        return this.state == DungeonState.Running && getLiveEntities() == 0;
     }
 
     public DungeonState getState() {
