@@ -10,14 +10,14 @@ import java.io.File;
 import java.util.EnumSet;
 
 public enum RoomType {
-    BANQUET_HALL("banquet_hall", EnumSet.of(Door.WEST), new RoomTypeInfo(1)),
-    BED_CHAMBERS("bed_chambers", EnumSet.of(Door.EAST), new RoomTypeInfo(1)),
-    CORNER_HALLWAY("corner_hallway", EnumSet.of(Door.WEST, Door.NORTH), new RoomTypeInfo(1)),
-    ICE_BRIDGES("ice_bridges", EnumSet.of(Door.NORTH, Door.SOUTH), new RoomTypeInfo(1, 2)),
-    MAZE_HALLWAYS("maze_hallways", EnumSet.of(Door.EAST, Door.SOUTH, Door.WEST), new RoomTypeInfo(1)),
-    STRAIGHT_HALLWAY("straight_hallway", EnumSet.of(Door.NORTH, Door.SOUTH), new RoomTypeInfo(1)),
-    THREE_HALLWAYS("three_hallways", EnumSet.of(Door.NORTH, Door.EAST, Door.WEST), new RoomTypeInfo(1)),
-    FOUR_HALLWAYS("four_hallways", Door.ALL_DOORS, new RoomTypeInfo(1));
+    BANQUET_HALL("banquet_hall", EnumSet.of(Door.WEST), new RoomTypeInfo()),
+    BED_CHAMBERS("bed_chambers", EnumSet.of(Door.EAST), new RoomTypeInfo()),
+    CORNER_HALLWAY("corner_hallway", EnumSet.of(Door.WEST, Door.NORTH), new RoomTypeInfo()),
+    ICE_BRIDGES("ice_bridges", EnumSet.of(Door.NORTH, Door.SOUTH), new RoomTypeInfo(-1, 2)),
+    MAZE_HALLWAYS("maze_hallways", EnumSet.of(Door.EAST, Door.SOUTH, Door.WEST), new RoomTypeInfo()),
+    STRAIGHT_HALLWAY("straight_hallway", EnumSet.of(Door.NORTH, Door.SOUTH), new RoomTypeInfo()),
+    THREE_HALLWAYS("three_hallways", EnumSet.of(Door.NORTH, Door.EAST, Door.WEST), new RoomTypeInfo()),
+    FOUR_HALLWAYS("four_hallways", Door.ALL_DOORS, new RoomTypeInfo());
 
     private final String schematicName;
     private final EnumSet<Door> doorDirections;

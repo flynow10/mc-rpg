@@ -5,6 +5,10 @@ import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.function.RegionFunction;
+import com.sk89q.worldedit.function.block.BlockReplace;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.function.visitor.RegionVisitor;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
@@ -12,6 +16,7 @@ import com.sk89q.worldedit.world.block.BlockState;
 import com.sk89q.worldedit.world.block.BlockTypes;
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.utils.Schematics;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.util.Vector;
@@ -23,6 +28,7 @@ import java.util.Random;
 
 public class Generator {
     public static String ENTRY_ROOM_SCHEMATIC_NAME = "entry_room";
+    private final Clipboard entryRoomClipboard;
     private final SpigotPlugin plugin;
     private final int width, height, floor;
     private final Maze maze;
@@ -35,6 +41,7 @@ public class Generator {
         this.height = height;
         this.floor = floor;
         this.maze = new Maze(width, height);
+        entryRoomClipboard = Schematics.LoadSchematic(Generator.ENTRY_ROOM_SCHEMATIC_NAME);
         rooms = new Room[height][width];
         populateRoomArray();
     }
@@ -73,7 +80,7 @@ public class Generator {
         pasteEntrySchematic(world, origin);
     }
 
-    public void cleanupDungeon(World world, Location origin) {
+    private void _internalCleanupDungeon(World world, Location origin) {
         com.sk89q.worldedit.world.World worldEditWorld = BukkitAdapter.adapt(world);
         BlockState airBlock = Objects.requireNonNull(BlockTypes.AIR).getDefaultState();
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(worldEditWorld)) {
@@ -82,28 +89,48 @@ public class Generator {
                     BlockVector3 pos1 = BlockVector3.at(origin.getBlockX() + x * Room.ROOM_SIZE, origin.getBlockY(), origin.getBlockZ() + z * Room.ROOM_SIZE);
                     BlockVector3 pos2 = pos1.add(Room.ROOM_SIZE - 1, Room.ROOM_SIZE - 1, Room.ROOM_SIZE - 1);
                     Region deleteRegion = new CuboidRegion(pos1, pos2);
-                    try {
-                        editSession.setBlocks(deleteRegion, airBlock);
-                    } catch (WorldEditException e) {
-                        plugin.getLogger().warning("Failed to delete room at (" + x + ", " + z + "): " + e.getMessage());
-                    }
+                    editSession.setBlocks(deleteRegion, airBlock);
                 }
             }
+            Vector entryPlacement = getEntryRoomPlacement(origin);
+            BlockVector3 entryDimensions = entryRoomClipboard.getDimensions();
+            BlockVector3 pos1 = BlockVector3.at(entryPlacement.getBlockX(), entryPlacement.getBlockY(), entryPlacement.getBlockZ());
+            BlockVector3 pos2 = BlockVector3.at(pos1.x() + entryDimensions.x(), pos1.y() + entryDimensions.y(), pos1.z() + entryDimensions.z());
+            Region entryRoom = new CuboidRegion(pos1, pos2);
+            editSession.setBlocks(entryRoom, airBlock);
+        }
+    }
+
+    public void cleanupDungeon(World world, Location origin) {
+        this.cleanupDungeon(world, origin, true);
+    }
+
+    public void cleanupDungeon(World world, Location origin, boolean async) {
+        if(async) {
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                _internalCleanupDungeon(world, origin);
+            });
+        } else {
+            _internalCleanupDungeon(world, origin);
         }
     }
 
     private void pasteEntrySchematic(World world, Location origin) {
-        Clipboard clipboard = Schematics.LoadSchematic(Generator.ENTRY_ROOM_SCHEMATIC_NAME);
-        BlockVector3 dimensions = clipboard.getDimensions();
+        Vector entryPlacement = getEntryRoomPlacement(origin);
+        try {
+            Schematics.PasteSchematic(entryPlacement, entryRoomClipboard, world);
+        } catch (WorldEditException e) {
+            plugin.getLogger().warning("Failed to paste entry room at (" + entryPlacement.getX() + ", " + entryPlacement.getZ() + "): " + e.getMessage());
+        }
+    }
+
+    private Vector getEntryRoomPlacement(Location origin) {
+        BlockVector3 dimensions = entryRoomClipboard.getDimensions();
         int x = origin.getBlockX();
         int z = origin.getBlockZ();
-        x += width * Room.ROOM_SIZE / 2 - dimensions.getX() / 2;
-        z -= dimensions.getZ();
-        try {
-            Schematics.PasteSchematic(new Vector(x, origin.getBlockY(), z), clipboard, world);
-        } catch (WorldEditException e) {
-            plugin.getLogger().warning("Failed to paste entry room at (" + x + ", " + z + "): " + e.getMessage());
-        }
+        x += ((width/2) * Room.ROOM_SIZE) + (Room.ROOM_SIZE/2) - dimensions.x() / 2;
+        z -= dimensions.z();
+        return new Vector(x, origin.getBlockY(), z);
     }
 
     public int getWidth() {

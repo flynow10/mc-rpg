@@ -17,7 +17,6 @@ import org.bukkit.util.Vector;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Room {
     public static final int ROOM_SIZE = 50;
@@ -49,8 +48,8 @@ public class Room {
             clipboard.setBlock(clipboard.getMinimumPoint().add(BlockVector3.at(info.getX(), info.getY(), info.getZ())), Objects.requireNonNull(
                     BlockTypes.AIR).getDefaultState());
             Vector3 worldEditVector = transform.apply(Vector3.at(info.getX(), info.getY(), info.getZ()));
-            spawners.add(new SpawnerInfo((int) worldEditVector.getX(), (int) worldEditVector.getY(),
-                    (int) worldEditVector.getZ(), info.getMobType(), info.getMobCount()));
+            spawners.add(new SpawnerInfo((int) worldEditVector.x(), (int) worldEditVector.y(),
+                    (int) worldEditVector.z(), info.getMobType(), info.getMobCount()));
         }
         Schematics.PasteSchematic(new Vector(roomLocation.getBlockX(), roomLocation.getBlockY(), roomLocation.getBlockZ()), clipboard, transform, editSession);
     }
@@ -105,7 +104,7 @@ public class Room {
         List<Room> rooms = new ArrayList<>();
         for (RoomType roomType : RoomType.values()) {
             RoomTypeInfo roomInfo = roomType.getInfo();
-            if(roomInfo.floor() != floor) {
+            if(roomInfo.floor() != -1 && roomInfo.floor() != floor) {
                 continue;
             }
             if(roomUses.containsKey(roomType) && roomInfo.maxPerDungeon() != -1) {

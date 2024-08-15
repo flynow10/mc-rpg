@@ -18,11 +18,7 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDeathEvent;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,17 +34,19 @@ public class Dungeon implements Listener {
     private final BossBar bossBar;
     private InsideCastleGuard castleGuard;
 
-    private boolean isLoaded = false;
-
     public Dungeon(SpigotPlugin plugin, Campaign campaign, int floor) {
         this(plugin, null, campaign, floor);
     }
 
     public Dungeon(SpigotPlugin plugin, DungeonManager dungeonManager, Campaign campaign, int floor) {
+        this(plugin, dungeonManager, campaign, floor, GetWidthFromFloor(floor), GetHeightFromFloor(floor));
+    }
+
+    public Dungeon(SpigotPlugin plugin, DungeonManager dungeonManager, Campaign campaign, int floor, int width, int height) {
         this.plugin = plugin;
         this.dungeonManager = dungeonManager;
         this.floor = floor;
-        this.dungeonGenerator = new Generator(plugin, 3, 3, floor);
+        this.dungeonGenerator = new Generator(plugin, width, height, floor);
         this.campaign = campaign;
         this.bossBar = Bukkit.createBossBar(ChatColor.RED + "Castle Raid: 0%", BarColor.BLUE, BarStyle.SOLID);
         updateBossBar();
@@ -56,15 +54,18 @@ public class Dungeon implements Listener {
     }
 
     public void start() {
-        if(state != DungeonState.PreStart) {
+        if(state == DungeonState.Running || state.isFinished()) {
             throw new IllegalStateException("Cannot start a dungeon after it has already started");
         }
-        if(!isLoaded) {
+        if(state != DungeonState.FinishedSetup) {
+            state = DungeonState.AwaitingPaste;
             for(RPGPlayer player : players) {
                 player.getPlayer().sendMessage(ChatColor.GREEN + "The castle will open momentarily...");
             }
-            setupDungeon();
+            pasteDungeon();
+            return;
         }
+        setupCastleGuard();
         spawnMobs();
 
         state = DungeonState.Running;
@@ -77,19 +78,20 @@ public class Dungeon implements Listener {
         bossBar.setVisible(true);
     }
 
-    public void setupDungeon() {
-        pasteDungeon();
-        setupCastleGuard();
-        isLoaded = true;
+    public void cleanup() {
+        this.cleanup(true);
     }
 
-    public void cleanup() {
+    public void cleanup(boolean async) {
+        if(state == DungeonState.AwaitingPaste) {
+            throw new IllegalStateException("Cannot clean up a dungeon while pasting is in progress!");
+        }
         if(this.dungeonManager != null) {
             this.dungeonManager.removeDungeon(this);
         }
-        if(isLoaded) {
+        if(state.pastSetup()) {
             World world = campaign.getWorld();
-            dungeonGenerator.cleanupDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world));
+            dungeonGenerator.cleanupDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world), async);
             castleGuard.despawn();
         }
         for(RPGPlayer player : players) {
@@ -98,7 +100,9 @@ public class Dungeon implements Listener {
         bossBar.removeAll();
         bossBar.setVisible(false);
         for(RPGEntity entity : entities) {
-            entity.remove(false);
+            if(!entity.isRemoved()) {
+                entity.remove(false);
+            }
         }
         state = DungeonState.CleanedUp;
     }
@@ -122,8 +126,18 @@ public class Dungeon implements Listener {
     }
 
     private void pasteDungeon() {
-        World world = campaign.getWorld();
-        dungeonGenerator.pasteDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world));
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            World world = campaign.getWorld();
+            dungeonGenerator.pasteDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world));
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if(state == DungeonState.AwaitingPaste) {
+                    state = DungeonState.FinishedSetup;
+                    start();
+                } else {
+                    state = DungeonState.FinishedSetup;
+                }
+            });
+        });
     }
 
     private void spawnMobs() {
@@ -190,7 +204,15 @@ public class Dungeon implements Listener {
     public Location getSpawnLocation() {
         World world = campaign.getWorld();
         Location spawnLocation = PointOfInterest.DUNGEON_GENERATION.toLocation(world);
-        spawnLocation.add(dungeonGenerator.getWidth() * Room.ROOM_SIZE / 2d, 5, -4);
+        spawnLocation.add((float)(((dungeonGenerator.getWidth()/2) * Room.ROOM_SIZE) + (Room.ROOM_SIZE/2)), 5, -4);
         return spawnLocation;
+    }
+
+    public static int GetWidthFromFloor(int floor) {
+        return (floor/2) + 3;
+    }
+
+    public static int GetHeightFromFloor(int floor) {
+        return (floor/4) + 3;
     }
 }

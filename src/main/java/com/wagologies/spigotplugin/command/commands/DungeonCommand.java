@@ -42,7 +42,7 @@ public class DungeonCommand extends SubCommands {
                     player.sendMessage(ChatColor.RED + "A dungeon already exists in this campaign!");
                     break;
                 }
-                dungeonManager.createDungeon(campaign, 1);
+                dungeonManager.createDungeon(campaign, campaign.getLastCompletedFloor() + 1);
                 player.sendMessage(ChatColor.GREEN + "Successfully created a new dungeon in " + campaign.getName() + "!");
                 break;
             }

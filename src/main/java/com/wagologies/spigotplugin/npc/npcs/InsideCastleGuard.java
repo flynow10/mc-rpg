@@ -22,7 +22,7 @@ public class InsideCastleGuard extends NPC {
     public InsideCastleGuard(SpigotPlugin plugin, Campaign campaign, Dungeon dungeon) {
         super(plugin, campaign);
         this.dungeon = dungeon;
-        Location spawnLocation =dungeon.getSpawnLocation().add(1.5, 0, 2.5);
+        Location spawnLocation = dungeon.getSpawnLocation().add(1.5, 0, 2.5);
         setTargetLocation(spawnLocation);
     }
 

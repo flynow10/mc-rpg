@@ -1,7 +1,6 @@
 package com.wagologies.spigotplugin.utils;
 
-import com.google.common.collect.Maps;
-import com.sk89q.jnbt.*;
+import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
@@ -17,16 +16,21 @@ import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.math.transform.Transform;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
-import com.sk89q.worldedit.world.DataFixer;
 import com.wagologies.spigotplugin.dungeon.SpawnerInfo;
 import com.wagologies.spigotplugin.mob.MobType;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.util.Vector;
+import org.enginehub.linbus.stream.LinBinaryIO;
+import org.enginehub.linbus.stream.LinStream;
+import org.enginehub.linbus.tree.LinCompoundTag;
+import org.enginehub.linbus.tree.LinListTag;
+import org.enginehub.linbus.tree.LinRootEntry;
+import org.enginehub.linbus.tree.LinTagType;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -94,30 +98,24 @@ public class Schematics {
     public static List<SpawnerInfo> ReadSchematic(String schematicName) throws IOException {
         File schematicFile = GetSchematicFile(schematicName);
 
-        NBTInputStream nbtInputStream = new NBTInputStream(new GZIPInputStream(new FileInputStream(schematicFile)));
-        NamedTag rootTag = nbtInputStream.readNamedTag();
-        CompoundTag schematicTag = (CompoundTag)rootTag.getTag();
-        Map<String, Tag> schematic = schematicTag.getValue();
-        if (schematic.size() == 1 && schematic.containsKey("Schematic")) {
-            schematicTag = requireTag(schematic, "Schematic", CompoundTag.class);
-            schematic = schematicTag.getValue();
+        LinStream nbtInputStream = LinBinaryIO.read(new DataInputStream(new GZIPInputStream(new FileInputStream(schematicFile))));
+        LinCompoundTag schematicTag = LinRootEntry.readFrom(nbtInputStream).value();
+        if(schematicTag.value().containsKey("Schematic")) {
+            schematicTag = schematicTag.getTag("Schematic", LinTagType.compoundTag());
         }
-
-        if(!schematic.containsKey("BlockEntities")) {
+        if(!schematicTag.value().containsKey("BlockEntities")) {
             return new ArrayList<>();
         }
-        ListTag tileEntities = requireTag(schematic, "BlockEntities", ListTag.class);
-
-        List<Map<String, Tag>> tileEntityTags = tileEntities.getValue().stream().map((tag) -> (CompoundTag)tag).map(CompoundTag::getValue).toList();
+        LinListTag<LinCompoundTag> tileEntities = schematicTag.getListTag("BlockEntities", LinTagType.compoundTag());
 
         List<SpawnerInfo> spawnerInfos = new ArrayList<>();
 
-        for (Map<String, Tag> tileEntity : tileEntityTags) {
-            String id = requireTag(tileEntity, "Id", StringTag.class).getValue();
+        for (LinCompoundTag tileEntity : tileEntities.value()) {
+            String id = tileEntity.getTag("Id", LinTagType.stringTag()).value();
             if(!id.equals("minecraft:structure_block")) {
                 continue;
             }
-            String mobName = requireTag(tileEntity, "name", StringTag.class).getValue().toUpperCase();
+            String mobName = tileEntity.getTag("name", LinTagType.stringTag()).value().toUpperCase();
             if(!mobName.startsWith("RPG:")) {
                 continue;
             }
@@ -127,9 +125,9 @@ public class Schematics {
             } catch (IllegalArgumentException e) {
                 continue;
             }
-            int[] pos = requireTag(tileEntity, "Pos", IntArrayTag.class).getValue();
+            int[] pos = tileEntity.getTag("Pos", LinTagType.intArrayTag()).value();
             Vector spawnerLocation = new Vector(pos[0], pos[1], pos[2]);
-            int spawnCount = requireTag(tileEntity, "posX", IntTag.class).getValue();
+            int spawnCount = tileEntity.getTag("posX", LinTagType.intTag()).value();
 
             spawnerInfos.add(new SpawnerInfo(spawnerLocation, mobType, spawnCount));
         }
@@ -146,19 +144,6 @@ public class Schematics {
             throw new IllegalStateException("Schematic file " + schematicFile + " is not readable");
         }
         return schematicFile;
-    }
-
-    protected static <T extends Tag> T requireTag(Map<String, Tag> items, String key, Class<T> expected) throws IOException {
-        if (!items.containsKey(key)) {
-            throw new IOException("Schematic file is missing a \"" + key + "\" tag of type " + expected.getName());
-        } else {
-            Tag tag = items.get(key);
-            if (!expected.isInstance(tag)) {
-                throw new IOException(key + " tag is not of tag type " + expected.getName() + ", got " + tag.getClass().getName() + " instead");
-            } else {
-                return expected.cast(tag);
-            }
-        }
     }
 
     public static File GetSchematicsFolder() {
