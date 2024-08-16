@@ -3,7 +3,6 @@ package com.wagologies.spigotplugin.npc;
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.event.ConversationInteractionEvent;
 import com.wagologies.spigotplugin.player.RPGPlayer;
-import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -11,6 +10,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.apache.commons.lang3.function.TriConsumer;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
@@ -102,10 +102,12 @@ public class Conversation {
     }
 
     public static abstract class InteractionStep extends ConversationStep implements Listener {
+        protected final SpigotPlugin plugin;
         protected final String interactionId;
         private final List<Runnable> listeners = new ArrayList<>();
 
         public InteractionStep(SpigotPlugin plugin) {
+            this.plugin = plugin;
             interactionId = UUID.randomUUID().toString();
             Bukkit.getPluginManager().registerEvents(this, plugin);
         }
@@ -130,6 +132,10 @@ public class Conversation {
 
         public void addAfterInteractionListener(Runnable runnable) {
             listeners.add(runnable);
+        }
+
+        public String getCommandBase() {
+            return "/conversation " + this.interactionId + " ";
         }
 
         @Override
@@ -178,13 +184,29 @@ public class Conversation {
         }
 
         public void speakToPlayer(RPGPlayer player, NPC npc, Conversation conversation) {
+            boolean shouldUseMessageCount = conversation.getSteps()
+                    .stream()
+                    .noneMatch(step -> step instanceof DialogTree);
+
+            String formattedMessage = formatText(player, npc, conversation);
+
+            if(!shouldUseMessageCount) {
+                player.getPlayer().sendMessage("");
+                if (customName == null) {
+                    npc.speakToPlayer(player.getPlayer(), formattedMessage);
+                } else {
+                    npc.speakToPlayer(player.getPlayer(), formattedMessage, customName);
+                }
+                return;
+            }
+
             List<AbstractSpeak> speakSteps = conversation.getSteps()
                     .stream()
                     .filter(step -> step instanceof AbstractSpeak)
                     .map(step -> (AbstractSpeak) step)
                     .toList();
             int index = speakSteps.indexOf(this);
-            String formattedMessage = formatText(player, npc, conversation);
+
             if (index != 0) {
                 player.getPlayer().sendMessage("");
             }
@@ -436,18 +458,18 @@ public class Conversation {
 
         @Override
         protected void sendInteraction(RPGPlayer player, NPC npc, Conversation conversation) {
-            String acceptCommand = "/conversation " + this.interactionId + " yes";
-            String denyCommand = "/conversation " + this.interactionId + " no";
+            String acceptCommand = getCommandBase() + "yes";
+            String denyCommand = getCommandBase() + "no";
             player.getPlayer().sendMessage("");
             BaseComponent chatQuestion = new ComponentBuilder()
                     .append("   ")
                     .append("[" + acceptText + "]")
-                    .color(ChatColor.GREEN).bold(true)
+                    .color(net.md_5.bungee.api.ChatColor.GREEN).bold(true)
                     .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, acceptCommand))
                     .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(acceptText)))
                     .append("   ")
                     .append("[" + denyText + "]")
-                    .color(ChatColor.RED).bold(true)
+                    .color(net.md_5.bungee.api.ChatColor.RED).bold(true)
                     .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, denyCommand))
                     .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(denyText)))
                     .build();

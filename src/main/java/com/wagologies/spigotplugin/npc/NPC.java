@@ -67,6 +67,14 @@ public abstract class NPC implements Listener {
         }
     }
 
+    public void speakToPlayer(Player player, String message) {
+        speakToPlayer(player, message, getName());
+    }
+
+    public void speakToPlayer(Player player, String message, String customName) {
+        player.sendMessage(ChatColor.DARK_GREEN + customName + ": " + ChatColor.GREEN + message);
+    }
+
     public void speakToPlayer(Player player, String message, int messageNum, int conversationLength) {
         speakToPlayer(player, message, messageNum, conversationLength, getName());
     }

@@ -3,12 +3,17 @@ package com.wagologies.spigotplugin.npc.npcs;
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
 import com.wagologies.spigotplugin.event.RPGClickNPCEvent;
+import com.wagologies.spigotplugin.npc.Conversation;
+import com.wagologies.spigotplugin.npc.DialogTree;
 import com.wagologies.spigotplugin.npc.NPC;
 import net.citizensnpcs.trait.SitTrait;
 import net.citizensnpcs.trait.SkinTrait;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 
 public class Mayor extends NPC {
+
+
     public Mayor(SpigotPlugin plugin, Campaign campaign) {
         super(plugin, campaign);
         setTargetLocation(new Location(campaign.getWorld(), 561.5,113.5,825.5, 180, 0));
@@ -29,7 +34,24 @@ public class Mayor extends NPC {
 
     @Override
     public void onInteract(RPGClickNPCEvent event) {
+        getIntroConversation().addPlayer(event.getRPGPlayer(), this, getPlugin());
+    }
 
+    private Conversation getIntroConversation() {
+        return new Conversation(
+                new DialogTree(getPlugin(),
+                        new DialogTree.ConversationNode("welcome", "questions", new Conversation.Speak("How can I help you today?")),
+                        new DialogTree.OptionNode("questions", false,
+                                new DialogTree.Option("Where am I?", "about-town"),
+                                new DialogTree.Option("Never mind", DialogTree.EXIT_NODE, ChatColor.GRAY)
+                        ),
+                        new DialogTree.ConversationNode("about-town", "questions",
+                                new Conversation.Speak("This is the town of Avalan, located in the northern provinces."),
+                                new Conversation.Speak("We are a humble town of around 300 people, and we rarely get visitors."),
+                                new Conversation.Speak("Unfortunately 3 years ago a mysterious icy figure began building a castle on the mountain, and monster attacks on our town have been getting worse ever since.")
+                        )
+                )
+        );
     }
 
     public String getSkinSignature() {
