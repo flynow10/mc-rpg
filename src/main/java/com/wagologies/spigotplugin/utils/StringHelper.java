@@ -37,4 +37,11 @@ public class StringHelper {
         }
         return prependedLore;
     }
+
+    public static String enumToHumanName(Enum<?> enumType) {
+        String humanName = enumType.name().toLowerCase();
+        humanName = humanName.substring(0, 1).toUpperCase() + humanName.substring(1);
+        humanName = humanName.replace("_", " ");
+        return humanName;
+    }
 }

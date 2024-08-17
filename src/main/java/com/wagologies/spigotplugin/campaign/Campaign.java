@@ -28,11 +28,12 @@ public class Campaign implements ConfigurationSerializable {
     private final List<OfflinePlayer> players = new ArrayList<>();
     private final List<NPC> npcs = new ArrayList<>();
     private final Map<String, Object> npcData;
-    private final QuestManager questManager;
+    private final QuestManager.Type loadedQuest;
 
     private CampaignManager campaignManager = null;
     private Arena arena;
     private FloorDisplay floorDisplay;
+    private QuestManager questManager;
     private int lastCompletedFloor;
 
     public Campaign(String name, List<OfflinePlayer> players) {
@@ -54,12 +55,13 @@ public class Campaign implements ConfigurationSerializable {
         this.players.addAll(players);
         this.npcData = npcData;
         this.lastCompletedFloor = lastCompletedFloor;
-        questManager = new QuestManager(this, currentQuest);
+        this.loadedQuest = currentQuest;
     }
 
     public void initialize() {
         arena = new Arena(this);
         floorDisplay = new FloorDisplay(this);
+        questManager = new QuestManager(this, loadedQuest);
         spawnNPCs();
     }
 

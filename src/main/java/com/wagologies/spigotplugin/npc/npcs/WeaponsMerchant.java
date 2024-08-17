@@ -2,14 +2,61 @@ package com.wagologies.spigotplugin.npc.npcs;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
+import com.wagologies.spigotplugin.entity.DamageSource;
+import com.wagologies.spigotplugin.item.ItemType;
+import com.wagologies.spigotplugin.item.MeleeWeapon;
+import com.wagologies.spigotplugin.item.RPGItem;
+import com.wagologies.spigotplugin.item.RPGItemBuilder;
 import com.wagologies.spigotplugin.npc.Merchant;
 import net.citizensnpcs.trait.SkinTrait;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemFlag;
 
 public class WeaponsMerchant extends Merchant {
     public WeaponsMerchant(SpigotPlugin plugin, Campaign campaign) {
         super(plugin, campaign);
         setTargetLocation(new Location(campaign.getWorld(), 552.5, 109.2, 788.5));
+    }
+
+    @Override
+    public ShopItem[] getShopItems() {
+        return new ShopItem[] {
+                new ShopItem(
+                        new RPGItemBuilder(Material.IRON_SWORD)
+                                .customType(ItemType.MELEE_WEAPON)
+                                .damage(18)
+                                .damageType(DamageSource.DamageType.SLICING)
+                                .name("Traveler's Blade")
+                                .build(this.getPlugin()),
+                        50
+                ),
+                new ShopItem(
+                        new RPGItemBuilder(Material.STONE_SWORD)
+                                .customType(ItemType.MELEE_WEAPON)
+                                .damage(12)
+                                .attackSpeed(MeleeWeapon.AttackSpeed.FAST)
+                                .damageType(DamageSource.DamageType.SLICING)
+                                .name("Small Dagger")
+                                .build(this.getPlugin()),
+                        75
+                ),
+                new ShopItem(
+                        new RPGItemBuilder(Material.WOODEN_SHOVEL)
+                                .customType(ItemType.MELEE_WEAPON)
+                                .attackSpeed(MeleeWeapon.AttackSpeed.SLOW)
+                                .name("Bludgeoning Club")
+                                .damage(25)
+                                .damageType(DamageSource.DamageType.BLUNT)
+                                .build(this.getPlugin()),
+                        35
+                )
+        };
+    }
+
+    @Override
+    public String getShopName() {
+        return "Weapons Merchant";
     }
 
     @Override

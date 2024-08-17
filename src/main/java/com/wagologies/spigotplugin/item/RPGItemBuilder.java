@@ -6,6 +6,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -23,6 +25,7 @@ public class RPGItemBuilder {
     private int damage = 0;
     private DamageSource.DamageType damageType = DamageSource.DamageType.SLICING;
     private WandCoreType coreType = WandCoreType.INERT;
+    private MeleeWeapon.AttackSpeed attackSpeed = MeleeWeapon.AttackSpeed.NORMAL;
     private int armorClass = 0;
     private int weight = -1;
 
@@ -186,6 +189,18 @@ public class RPGItemBuilder {
         return damage;
     }
 
+    public RPGItemBuilder attackSpeed(MeleeWeapon.AttackSpeed speed) {
+        if(type != ItemType.MELEE_WEAPON) {
+            Bukkit.getLogger().warning("Setting damage of non weapon!");
+        }
+        this.attackSpeed = speed;
+        return this;
+    }
+
+    public MeleeWeapon.AttackSpeed getAttackSpeed() {
+        return attackSpeed;
+    }
+
     public RPGItemBuilder damageType(DamageSource.DamageType damageType) {
         if(type != ItemType.MELEE_WEAPON) {
             Bukkit.getLogger().warning("Setting damage type of non weapon!");
@@ -244,6 +259,7 @@ public class RPGItemBuilder {
                 MeleeWeapon meleeWeapon = new MeleeWeapon(plugin, itemStack);
                 meleeWeapon.setBaseDamage(damage);
                 meleeWeapon.setDamageType(damageType);
+                meleeWeapon.setAttackSpeed(attackSpeed);
                 return meleeWeapon;
             }
             case WAND -> {

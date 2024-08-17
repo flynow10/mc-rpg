@@ -18,24 +18,26 @@ public class OfflinePlayer implements ConfigurationSerializable {
     private final String id;
     private final String playerId;
     private String name;
+    private int coins;
     private AbilityScores abilityScores;
     private String inventoryString;
     private Location location;
     private StarterKit starterKit;
 
     public OfflinePlayer(String playerId, String name, AbilityScores abilityScores) {
-        this(StringHelper.nanoId(), playerId, name, abilityScores, SerializeInventory.itemStackArrayToBase64(new ItemStack[41]));
+        this(StringHelper.nanoId(), playerId, name, abilityScores, SerializeInventory.itemStackArrayToBase64(new ItemStack[41]), 100);
     }
 
     public OfflinePlayer(String playerId, String name, AbilityScores abilityScores, String inventoryString) {
-        this(StringHelper.nanoId(), playerId, name, abilityScores, inventoryString);
+        this(StringHelper.nanoId(), playerId, name, abilityScores, inventoryString, 100);
     }
 
-    public OfflinePlayer(String id, String playerId, String name, AbilityScores abilityScores, String inventoryString) {
+    public OfflinePlayer(String id, String playerId, String name, AbilityScores abilityScores, String inventoryString, int coins) {
         this.id = id;
         this.playerId = playerId;
         this.name = name;
         this.abilityScores = abilityScores;
+        this.coins = coins;
         this.inventoryString = inventoryString;
     }
 
@@ -99,6 +101,15 @@ public class OfflinePlayer implements ConfigurationSerializable {
         return this;
     }
 
+    public int getCoins() {
+        return coins;
+    }
+
+    public OfflinePlayer setCoins(int coins) {
+        this.coins = coins;
+        return this;
+    }
+
     @Override
     public Map<String, Object> serialize() {
         LinkedHashMap<String, Object> result = new LinkedHashMap<>();
@@ -113,6 +124,7 @@ public class OfflinePlayer implements ConfigurationSerializable {
         result.put("wisdom", abilityScores.getWisdom());
         result.put("charisma", abilityScores.getCharisma());
         result.put("inventory", inventoryString);
+        result.put("coins", coins);
         result.put("location", location.serialize());
         return result;
     }
@@ -142,6 +154,11 @@ public class OfflinePlayer implements ConfigurationSerializable {
         if(starterKit == null) {
             throw new IllegalStateException("Could not find kit named " + starterKitName + "!");
         }
+        Integer coins = (Integer) args.get("coins");
+        if(coins == null) {
+            throw new IllegalStateException("Could not deserialize coins of offline player!");
+        }
+
         AbilityScores abilityScores = new AbilityScores();
         abilityScores.setStrength((Integer) args.get("strength"));
         abilityScores.setDexterity((Integer) args.get("dexterity"));
@@ -149,7 +166,7 @@ public class OfflinePlayer implements ConfigurationSerializable {
         abilityScores.setIntelligence((Integer) args.get("intelligence"));
         abilityScores.setWisdom((Integer) args.get("wisdom"));
         abilityScores.setCharisma((Integer) args.get("charisma"));
-        OfflinePlayer loadedCharacter = new OfflinePlayer(id, playerId, name, abilityScores, inventory);
+        OfflinePlayer loadedCharacter = new OfflinePlayer(id, playerId, name, abilityScores, inventory, coins);
         loadedCharacter.setStarterKit(starterKit);
         loadedCharacter.setLocation(Location.deserialize((Map<String, Object>) args.get("location")));
         return loadedCharacter;

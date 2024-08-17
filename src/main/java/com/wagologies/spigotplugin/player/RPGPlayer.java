@@ -39,6 +39,7 @@ public class RPGPlayer extends RPGEntity {
     private final PlayerListener playerListener;
     private SpellCast spellCast = null;
     private int mana = 100;
+    private int coins = 100;
     private String actionBarCenter = "";
     private final Campaign campaign;
     private StarterKit starterKit;
@@ -127,7 +128,8 @@ public class RPGPlayer extends RPGEntity {
                 .setInventoryString(SerializeInventory.playerInventoryToBase64(player.getInventory()))
                 .setAbilityScores(getAbilityScores())
                 .setLocation(getSaveLocation())
-                .setStarterKit(starterKit);
+                .setStarterKit(starterKit)
+                .setCoins(coins);
     }
 
     @Override
@@ -260,6 +262,7 @@ public class RPGPlayer extends RPGEntity {
         AbilityScores loadedScores = character.getAbilityScores();
         this.setAbilityScores(loadedScores.getStrength(), loadedScores.getDexterity(), loadedScores.getConstitution(), loadedScores.getIntelligence(), loadedScores.getWisdom(), loadedScores.getCharisma());
         this.starterKit = character.getStarterKit();
+        this.coins = character.getCoins();
         player.getInventory().setContents(character.getInventoryContents());
         player.setDisplayName(character.getName());
         player.setPlayerListName(character.getName());
@@ -399,5 +402,25 @@ public class RPGPlayer extends RPGEntity {
     public RPGPlayer setInDungeon(boolean inDungeon) {
         isInDungeon = inDungeon;
         return this;
+    }
+
+    public int getCoins() {
+        return coins;
+    }
+
+    public void setCoins(int coins) {
+        this.coins = coins;
+    }
+
+    public void gainCoins(int coins) {
+        this.coins += coins;
+    }
+
+    public boolean payCoins(int payment) {
+        if(getCoins() >= payment) {
+            setCoins(getCoins() - payment);
+            return true;
+        }
+        return false;
     }
 }

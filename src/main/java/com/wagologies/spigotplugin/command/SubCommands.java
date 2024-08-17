@@ -24,6 +24,9 @@ public abstract class SubCommands extends PlayerCommand {
         for (int i = 0; i < strings.length; i++) {
             String subCommand = strings[i];
             String[] subCommands = getSubCommands(i + 1, player, strings);
+            if(subCommands.length == 0) {
+                continue;
+            }
             if (Arrays.stream(subCommands).noneMatch(cmd -> Objects.equals(subCommand, cmd))) {
                 player.sendMessage(ChatColor.RED + "Invalid sub command!");
                 return true;

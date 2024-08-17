@@ -13,6 +13,16 @@ public class WizardMerchant extends Merchant {
     }
 
     @Override
+    public ShopItem[] getShopItems() {
+        return new ShopItem[0];
+    }
+
+    @Override
+    public String getShopName() {
+        return "Wizard Merchant";
+    }
+
+    @Override
     protected void setupNPC() {
         SkinTrait skinTrait = citizenNPC.getOrAddTrait(SkinTrait.class);
         skinTrait.setSkinPersistent("WizardMerchant", getSkinSignature(), getSkinTexture());
