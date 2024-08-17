@@ -57,13 +57,13 @@ public class CoinsCommand extends SubCommands {
             }
             case "add": {
                 rpgPlayer.gainCoins(coins);
-                player.sendMessage(ChatColor.GREEN + "Added " + ChatColor.GOLD + rpgPlayer.getCoins() + ChatColor.GREEN + " coins to " + ChatColor.AQUA + rpgPlayer.getName() + ChatColor.GREEN + ".");
+                player.sendMessage(ChatColor.GREEN + "Added " + ChatColor.GOLD + coins + ChatColor.GREEN + " coins to " + ChatColor.AQUA + rpgPlayer.getName() + ChatColor.GREEN + ".");
                 break;
             }
             case "sub": {
                 boolean transactionSuccess = rpgPlayer.payCoins(coins);
                 if(transactionSuccess) {
-                    player.sendMessage(ChatColor.GREEN + "Removed " + ChatColor.GOLD + rpgPlayer.getCoins() + ChatColor.GREEN + " coins from " + ChatColor.AQUA + rpgPlayer.getName() + ChatColor.GREEN + ".");
+                    player.sendMessage(ChatColor.GREEN + "Removed " + ChatColor.GOLD + coins + ChatColor.GREEN + " coins from " + ChatColor.AQUA + rpgPlayer.getName() + ChatColor.GREEN + ".");
                 } else {
                     player.sendMessage(ChatColor.RED + "Failed to remove coins from " + ChatColor.AQUA + rpgPlayer.getName() + ChatColor.GREEN + " because their balance is too low.");
                 }

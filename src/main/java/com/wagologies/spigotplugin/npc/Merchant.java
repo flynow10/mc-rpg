@@ -33,8 +33,7 @@ public abstract class Merchant extends NPC {
     public void openShop(RPGPlayer clickingPlayer) {
         ShopItem[] shopItems = getShopItems();
         int[] borderSlots = getBorderSlots(getShopRows());
-        System.out.println(Arrays.toString(borderSlots));
-
+        
         SGMenu shopMenu = getPlugin().getGuiManager().create(getShopName(), getShopRows() + 2);
 
         int currentSlot = 10;

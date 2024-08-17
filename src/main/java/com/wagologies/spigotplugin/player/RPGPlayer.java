@@ -8,6 +8,7 @@ import com.google.common.base.Strings;
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
 import com.wagologies.spigotplugin.campaign.PointOfInterest;
+import com.wagologies.spigotplugin.campaign.QuestManager;
 import com.wagologies.spigotplugin.entity.AbilityScores;
 import com.wagologies.spigotplugin.entity.DamageSource;
 import com.wagologies.spigotplugin.entity.RPGEntity;
@@ -20,6 +21,8 @@ import com.wagologies.spigotplugin.item.Wand;
 import com.wagologies.spigotplugin.spell.SpellCast;
 import com.wagologies.spigotplugin.spell.SpellType;
 import com.wagologies.spigotplugin.utils.SerializeInventory;
+import com.wagologies.spigotplugin.utils.StringHelper;
+import com.xism4.sternalboard.SternalBoard;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -32,6 +35,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RPGPlayer extends RPGEntity {
@@ -46,6 +50,7 @@ public class RPGPlayer extends RPGEntity {
     private boolean isInConversation = false;
     private boolean isInArena = false;
     private boolean isInDungeon = false;
+    private SternalBoard scoreboard;
 
     public RPGPlayer(Player player, SpigotPlugin plugin, Campaign campaign) {
         super(plugin);
@@ -53,6 +58,7 @@ public class RPGPlayer extends RPGEntity {
         this.playerListener = new PlayerListener(plugin, this);
         this.campaign = campaign;
         this.player.setGameMode(GameMode.ADVENTURE);
+        setupScoreboard();
         setHealth(getMaxHealth());
     }
 
@@ -113,6 +119,7 @@ public class RPGPlayer extends RPGEntity {
             player.setDisplayName(player.getName());
             player.setPlayerListName(player.getName());
             updateOfflinePlayer();
+            removeScoreboard();
             playerListener.removeListener();
         } else {
             setHealth(getMaxHealth());
@@ -267,6 +274,29 @@ public class RPGPlayer extends RPGEntity {
         player.setDisplayName(character.getName());
         player.setPlayerListName(character.getName());
         player.teleport(character.getLocation());
+        updateScoreboard();
+    }
+
+    private void setupScoreboard() {
+        scoreboard = new SternalBoard(this.player);
+        scoreboard.updateTitle("Unnamed RPG");
+        updateScoreboard();
+    }
+
+    private void removeScoreboard() {
+        scoreboard.delete();
+    }
+
+    public void updateScoreboard() {
+        List<String> lines = new ArrayList<>(List.of(
+                "Welcome: " + ChatColor.AQUA + player.getName(),
+                " ",
+                "Coins: " + ChatColor.GOLD + coins,
+                " ",
+                "Current Quest:"));
+        QuestManager.Type quest = campaign.getQuestManager().getCurrentQuest();
+        lines.addAll(StringHelper.prependWithColor(StringHelper.wrapItemLore(quest.getTitle(), 30), " " + ChatColor.YELLOW, false));
+        scoreboard.updateLines(lines);
     }
 
     @Override
@@ -410,10 +440,11 @@ public class RPGPlayer extends RPGEntity {
 
     public void setCoins(int coins) {
         this.coins = coins;
+        updateScoreboard();
     }
 
     public void gainCoins(int coins) {
-        this.coins += coins;
+        this.setCoins(getCoins() + coins);
     }
 
     public boolean payCoins(int payment) {

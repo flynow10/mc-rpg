@@ -98,12 +98,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.github.NEZNAMY</groupId>
-      <artifactId>TAB-API</artifactId>
-      <version>4.1.6</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>com.github.decentsoftware-eu</groupId>
       <artifactId>decentholograms</artifactId>
       <version>2.8.11</version>

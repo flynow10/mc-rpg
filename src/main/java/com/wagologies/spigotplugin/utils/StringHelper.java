@@ -19,7 +19,11 @@ public class StringHelper {
     }
 
     public static List<String> wrapItemLore(String lore) {
-        return Arrays.stream(WordUtils.wrap(lore, 25, "\n", true).split("\n")).toList();
+        return wrapItemLore(lore, 25);
+    }
+
+    public static List<String> wrapItemLore(String lore, int wrapLength) {
+        return Arrays.stream(WordUtils.wrap(lore, wrapLength, "\n", true).split("\n")).toList();
     }
 
     public static List<String> prependWithReset(List<String> lore) {

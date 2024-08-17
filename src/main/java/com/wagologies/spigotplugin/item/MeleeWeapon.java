@@ -40,7 +40,9 @@ public class MeleeWeapon extends RPGItem {
         meta.setLore(StringHelper.prependWithReset(List.of(
                 ChatColor.DARK_GRAY + "Damage: " + ChatColor.RED + getBaseDamage(),
                 ChatColor.DARK_GRAY + "Damage Type: " + ChatColor.GRAY + StringHelper.enumToHumanName(getDamageType()),
-                ChatColor.DARK_GRAY + "Attack Speed: " + ChatColor.GRAY + StringHelper.enumToHumanName(getAttackSpeed())
+                ChatColor.DARK_GRAY + "Attack Speed: " + ChatColor.GRAY + StringHelper.enumToHumanName(getAttackSpeed()),
+                "",
+                ChatColor.DARK_GRAY.toString() + ChatColor.BOLD + StringHelper.enumToHumanName(getItemType()).toUpperCase()
         )));
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         itemStack.setItemMeta(meta);
@@ -99,10 +101,10 @@ public class MeleeWeapon extends RPGItem {
     }
 
     public enum AttackSpeed {
-        SLOW(0),
-        NORMAL(0),
-        FAST(0),
-        VERY_FAST(0);
+        SLOW(-3),
+        NORMAL(-1),
+        FAST(1),
+        VERY_FAST(4);
 
         private double value;
         private AttributeModifier.Operation operation;
