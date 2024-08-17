@@ -56,7 +56,10 @@ public class DialogTree extends Conversation.InteractionStep {
     protected void onReceiveInteraction(ConversationInteractionEvent event) {
         Node currentNode = getCurrentNode();
         if(currentNode instanceof OptionNode optionNode) {
-            optionNode.acceptOption(event.getResponse(), this, event.getPlayer());
+            boolean didAccept = optionNode.acceptOption(event.getResponse(), this, event.getPlayer());
+            if(!didAccept) {
+                event.getPlayer().getPlayer().sendMessage(ChatColor.RED + "This option has already been used or has expired!");
+            }
         }
     }
 
@@ -163,17 +166,17 @@ public class DialogTree extends Conversation.InteractionStep {
             return optionBuilder.build();
         }
 
-        public void acceptOption(String optionId, DialogTree dialogTree, RPGPlayer player) {
+        public boolean acceptOption(String optionId, DialogTree dialogTree, RPGPlayer player) {
             for(Option option : options) {
                 if(option.optionId.toString().equals(optionId)) {
                     if(!option.nextNodeId.equals(DialogTree.EXIT_NODE)) {
                         player.getPlayer().sendMessage(ChatColor.GRAY + "[" + player.getName() +"]: " + ChatColor.YELLOW + option.optionName);
                     }
                     dialogTree.runNode(option.nextNodeId);
-                    return;
+                    return true;
                 }
             }
-            throw new RuntimeException("Option with id: " + optionId + " not found");
+            return false;
         }
     }
 

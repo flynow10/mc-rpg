@@ -38,17 +38,36 @@ public class Mayor extends NPC {
     }
 
     private Conversation getIntroConversation() {
+        Conversation.ConversationStep[] bandits = new Conversation.ConversationStep[]{
+                new Conversation.Speak("I'm very sorry for any trouble they caused you."),
+                new Conversation.Speak("We aren't a very large town, so we can't afford to employ many guards."),
+                new Conversation.Speak("Ever since the castle on the mountain was built, it seems like we've had more unsavory visitors than ever.")
+        };
         return new Conversation(
                 new DialogTree(getPlugin(),
                         new DialogTree.ConversationNode("welcome", "questions", new Conversation.Speak("How can I help you today?")),
                         new DialogTree.OptionNode("questions", false,
                                 new DialogTree.Option("Where am I?", "about-town"),
+                                new DialogTree.Option("You should do something about your bandit problem.", "bandits"),
                                 new DialogTree.Option("Never mind", DialogTree.EXIT_NODE, ChatColor.GRAY)
                         ),
-                        new DialogTree.ConversationNode("about-town", "questions",
+                        new DialogTree.OptionNode("questions+help", false,
+                                new DialogTree.Option("Where am I?", "about-town"),
+                                new DialogTree.Option("Do you need help with the castle?", "castle-help"),
+                                new DialogTree.Option("You should do something about your bandit problem.", "bandits+help"),
+                                new DialogTree.Option("Never mind", DialogTree.EXIT_NODE, ChatColor.GRAY)
+                        ),
+                        new DialogTree.ConversationNode("about-town", "questions+help",
                                 new Conversation.Speak("This is the town of Avalan, located in the northern provinces."),
-                                new Conversation.Speak("We are a humble town of around 300 people, and we rarely get visitors."),
+                                new Conversation.Speak("We are a humble town of around 300 people, but as a rest stop without much defense, we don't get many friendly visitors."),
                                 new Conversation.Speak("Unfortunately 3 years ago a mysterious icy figure began building a castle on the mountain, and monster attacks on our town have been getting worse ever since.")
+                        ),
+                        new DialogTree.ConversationNode("bandits", "questions", bandits),
+                        new DialogTree.ConversationNode("bandits+help", "questions+help", bandits),
+                        new DialogTree.ConversationNode("castle-help", DialogTree.EXIT_NODE,
+                                new Conversation.Speak("We would greatly appreciate any assistance you can give."),
+                                new Conversation.Speak("Alas, I fear we won't be able to compensate you for your work."),
+                                new Conversation.Speak("If you can free our town from the attacks of the castle, we will give you anything in our power to give.")
                         )
                 )
         );
