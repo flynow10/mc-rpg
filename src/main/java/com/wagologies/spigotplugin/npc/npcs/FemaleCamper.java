@@ -2,6 +2,7 @@ package com.wagologies.spigotplugin.npc.npcs;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
+import com.wagologies.spigotplugin.campaign.QuestManager;
 import com.wagologies.spigotplugin.campaign.triggers.BoxTrigger;
 import com.wagologies.spigotplugin.event.player.RPGClickNPCEvent;
 import com.wagologies.spigotplugin.npc.Conversation;
@@ -35,9 +36,12 @@ public class FemaleCamper extends NPC {
             new Conversation.Speak("Unfortunately, we ran into some \"unsavory\" characters on the path up to the town."),
             new Conversation.Speak("They stole all the money we had for our trip, and we had no choice but to camp here until we came up with a plan."),
             new Conversation.Speak("We've been preparing weapons to get our money back, but we're just not strong enough!"),
-            new Conversation.Speak("My brother can show you where we've been stashing our weapons and practicing."),
+            new Conversation.Speak("My brother can show you where we've been stashing our weapons and training."),
             new Conversation.Speak("If you can help us get our money back, we'd be happy to give you some of the items we've been collecting."),
-            new Conversation.CustomRunnable((players, npc, conversation) -> hasPlayedAskForHelp = true)
+            new Conversation.CustomRunnable((players, npc, conversation) -> {
+                hasPlayedAskForHelp = true;
+                this.getCampaign().getQuestManager().setCurrentQuest(QuestManager.Type.PrepareForBandits);
+            })
     );
 
     public FemaleCamper(SpigotPlugin plugin, Campaign campaign) {
@@ -84,7 +88,6 @@ public class FemaleCamper extends NPC {
         MaleCamper brother = getCampaign().getNpcs().stream().filter(npc -> npc instanceof MaleCamper).map(npc -> (MaleCamper)npc).findAny().orElseThrow();
         if(!brother.hasGoneToArena) {
             speakToPlayer(event.getPlayer(), "Go talk to my brother! He'll show you where we've been training.", 1, 1);
-            return;
         }
     }
 

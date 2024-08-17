@@ -2,6 +2,7 @@ package com.wagologies.spigotplugin.npc.npcs;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
+import com.wagologies.spigotplugin.campaign.QuestManager;
 import com.wagologies.spigotplugin.event.player.RPGClickNPCEvent;
 import com.wagologies.spigotplugin.npc.Conversation;
 import com.wagologies.spigotplugin.npc.NPC;
@@ -34,9 +35,11 @@ public class BoatCaptain extends NPC {
     @Override
     public void onInteract(RPGClickNPCEvent event) {
         new Conversation(new Conversation.Speak("We've arrived in Avalan! I hope you enjoyed your ride."),
+                new Conversation.Speak("If you're looking for some work, I'd recommend speaking to the mayor in the town."),
                 new Conversation.Speak(
                         "Be careful as you head up the path. I hear there the town has been plagued by monster attacks from the mountain!"),
-                new Conversation.Speak("Good luck and be safe on your travels adventurer!")).addPlayer(
-                event.getRPGPlayer(), this, getPlugin());
+                new Conversation.Speak("Good luck and be safe on your travels adventurer!"),
+                new Conversation.CustomRunnable((rpgPlayers, npc, conversation) -> this.getCampaign().getQuestManager().setCurrentQuest(QuestManager.Type.MeetMayor))
+        ).addPlayer(event.getRPGPlayer(), this, getPlugin());
     }
 }

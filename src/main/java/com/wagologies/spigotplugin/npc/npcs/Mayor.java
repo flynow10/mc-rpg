@@ -2,6 +2,7 @@ package com.wagologies.spigotplugin.npc.npcs;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
+import com.wagologies.spigotplugin.campaign.QuestManager;
 import com.wagologies.spigotplugin.event.player.RPGClickNPCEvent;
 import com.wagologies.spigotplugin.npc.Conversation;
 import com.wagologies.spigotplugin.npc.DialogTree;
@@ -41,7 +42,7 @@ public class Mayor extends NPC {
         Conversation.ConversationStep[] bandits = new Conversation.ConversationStep[]{
                 new Conversation.Speak("I'm very sorry for any trouble they caused you."),
                 new Conversation.Speak("We aren't a very large town, so we can't afford to employ many guards."),
-                new Conversation.Speak("Ever since the castle on the mountain was built, it seems like we've had more unsavory visitors than ever.")
+                new Conversation.Speak("Ever since the castle on the mountain was built, it seems like we've had more bandit attacks than ever.")
         };
         return new Conversation(
                 new DialogTree(getPlugin(),
@@ -67,7 +68,8 @@ public class Mayor extends NPC {
                         new DialogTree.ConversationNode("castle-help", DialogTree.EXIT_NODE,
                                 new Conversation.Speak("We would greatly appreciate any assistance you can give."),
                                 new Conversation.Speak("Alas, I fear we won't be able to compensate you for your work."),
-                                new Conversation.Speak("If you can free our town from the attacks of the castle, we will give you anything in our power to give.")
+                                new Conversation.Speak("If you can free our town from the attacks of the castle, we will give you anything in our power to give."),
+                                new Conversation.CustomRunnable((rpgPlayers, npc, conversation) -> this.getCampaign().getQuestManager().setCurrentQuest(QuestManager.Type.StormCastle))
                         )
                 )
         );
