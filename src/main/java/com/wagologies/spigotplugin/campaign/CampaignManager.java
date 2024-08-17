@@ -42,7 +42,7 @@ public class CampaignManager {
     public Campaign createNewCampaign() {
         String name = StringHelper.nanoId();
         World campaignWorld = WorldHelper.createCampaignWorld(name);
-        Campaign campaign = new Campaign(name, campaignWorld, new ArrayList<>(), null, 0);
+        Campaign campaign = new Campaign(name, campaignWorld);
         campaign.setCampaignManager(this);
         campaign.initialize();
         campaigns.add(campaign);

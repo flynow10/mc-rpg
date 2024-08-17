@@ -2,7 +2,7 @@ package com.wagologies.spigotplugin.player;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.entity.RPGEntity;
-import com.wagologies.spigotplugin.event.RPGClickNPCEvent;
+import com.wagologies.spigotplugin.event.player.RPGClickNPCEvent;
 import com.wagologies.spigotplugin.item.RPGItem;
 import com.wagologies.spigotplugin.item.ItemType;
 import com.wagologies.spigotplugin.item.Wand;

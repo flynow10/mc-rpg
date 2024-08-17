@@ -12,7 +12,7 @@ import com.wagologies.spigotplugin.entity.AbilityScores;
 import com.wagologies.spigotplugin.entity.DamageSource;
 import com.wagologies.spigotplugin.entity.RPGEntity;
 import com.wagologies.spigotplugin.event.CastSpellEvent;
-import com.wagologies.spigotplugin.event.RPGPlayerDeathEvent;
+import com.wagologies.spigotplugin.event.player.RPGPlayerDeathEvent;
 import com.wagologies.spigotplugin.item.Armor;
 import com.wagologies.spigotplugin.item.RPGItem;
 import com.wagologies.spigotplugin.item.ItemType;

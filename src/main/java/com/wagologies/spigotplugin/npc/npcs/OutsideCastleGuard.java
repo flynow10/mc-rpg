@@ -4,7 +4,7 @@ import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
 import com.wagologies.spigotplugin.dungeon.Dungeon;
 import com.wagologies.spigotplugin.dungeon.DungeonState;
-import com.wagologies.spigotplugin.event.RPGClickNPCEvent;
+import com.wagologies.spigotplugin.event.player.RPGClickNPCEvent;
 import com.wagologies.spigotplugin.npc.Conversation;
 import com.wagologies.spigotplugin.npc.NPC;
 import com.wagologies.spigotplugin.player.RPGPlayer;

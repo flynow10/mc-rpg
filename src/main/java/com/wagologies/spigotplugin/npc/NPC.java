@@ -2,7 +2,7 @@ package com.wagologies.spigotplugin.npc;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
-import com.wagologies.spigotplugin.event.RPGClickNPCEvent;
+import com.wagologies.spigotplugin.event.player.RPGClickNPCEvent;
 import com.wagologies.spigotplugin.player.RPGPlayer;
 import com.wagologies.spigotplugin.utils.StringHelper;
 import net.citizensnpcs.api.CitizensAPI;

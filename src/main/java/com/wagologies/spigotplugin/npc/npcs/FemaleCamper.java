@@ -3,7 +3,7 @@ package com.wagologies.spigotplugin.npc.npcs;
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
 import com.wagologies.spigotplugin.campaign.triggers.BoxTrigger;
-import com.wagologies.spigotplugin.event.RPGClickNPCEvent;
+import com.wagologies.spigotplugin.event.player.RPGClickNPCEvent;
 import com.wagologies.spigotplugin.npc.Conversation;
 import com.wagologies.spigotplugin.npc.NPC;
 import com.wagologies.spigotplugin.player.RPGPlayer;
@@ -12,7 +12,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 

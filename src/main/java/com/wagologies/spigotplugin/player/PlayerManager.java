@@ -2,6 +2,9 @@ package com.wagologies.spigotplugin.player;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
+import com.wagologies.spigotplugin.event.player.RPGPlayerJoinEvent;
+import com.wagologies.spigotplugin.event.player.RPGPlayerLeaveEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,13 +32,22 @@ public class PlayerManager implements Listener {
     }
 
     public RPGPlayer joinPlayer(Player player, Campaign campaign) {
-        RPGPlayer currentPlayer = players.stream().filter(p -> p.getPlayer().equals(player)).findAny().orElse(null);
+        RPGPlayer currentPlayer = getPlayer(player);
         if(currentPlayer != null) {
-            return currentPlayer;
+            if(currentPlayer.getCampaign().equals(campaign)) {
+                return currentPlayer;
+            } else {
+                leavePlayer(currentPlayer);
+            }
         }
+
         RPGPlayer rpgPlayer = new RPGPlayer(player, plugin, campaign);
         players.add(rpgPlayer);
         plugin.getEntityManager().addPlayer(rpgPlayer);
+
+        RPGPlayerJoinEvent joinEvent = new RPGPlayerJoinEvent(rpgPlayer);
+        Bukkit.getPluginManager().callEvent(joinEvent);
+
         player.sendMessage(ChatColor.GREEN + "Welcome to the unnamed RPG!");
         plugin.getLogger().info("Added player \"" + player.getName() + "\" to player manager");
         return rpgPlayer;
@@ -50,6 +62,10 @@ public class PlayerManager implements Listener {
 
         players.remove(player);
         plugin.getEntityManager().removePlayer(player);
+
+        RPGPlayerLeaveEvent leaveEvent = new RPGPlayerLeaveEvent(player, player.getCampaign());
+        Bukkit.getPluginManager().callEvent(leaveEvent);
+
         plugin.getLogger().info("Removed Player \"" + player.getPlayer().getName() + "\" from player manager");
     }
     @Nullable

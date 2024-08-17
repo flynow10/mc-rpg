@@ -21,32 +21,40 @@ import java.util.Map;
 
 @SerializableAs("Campaign")
 public class Campaign implements ConfigurationSerializable {
-
     public static final int CASTLE_FLOOR_COUNT = 8;
-    private CampaignManager campaignManager = null;
+
     private final String name;
     private final World world;
     private final List<OfflinePlayer> players = new ArrayList<>();
-    private int lastCompletedFloor = 0;
     private final List<NPC> npcs = new ArrayList<>();
     private final Map<String, Object> npcData;
+    private final QuestManager questManager;
+
+    private CampaignManager campaignManager = null;
     private Arena arena;
     private FloorDisplay floorDisplay;
+    private int lastCompletedFloor;
 
     public Campaign(String name, List<OfflinePlayer> players) {
-        this(name, players, null, 0);
+        this(name, players, null, 0, QuestManager.Type.TalkToBoatCaptain);
     }
 
-    public Campaign(String name, List<OfflinePlayer> players, Map<String, Object> npcConfiguration, int lastCompletedFloor) {
-        this(name, WorldHelper.loadWorld(name), players, npcConfiguration, lastCompletedFloor);
+    // Used for new Campaigns
+    public Campaign(String name, World world) {
+        this(name, world, new ArrayList<>(), null, 0, QuestManager.Type.TalkToBoatCaptain);
     }
 
-    public Campaign(String name, World world, List<OfflinePlayer> players, Map<String, Object> npcData, int lastCompletedFloor) {
+    public Campaign(String name, List<OfflinePlayer> players, Map<String, Object> npcConfiguration, int lastCompletedFloor, QuestManager.Type currentQuest) {
+        this(name, WorldHelper.loadWorld(name), players, npcConfiguration, lastCompletedFloor, currentQuest);
+    }
+
+    public Campaign(String name, World world, List<OfflinePlayer> players, Map<String, Object> npcData, int lastCompletedFloor, QuestManager.Type currentQuest) {
         this.name = name;
         this.world = world;
         this.players.addAll(players);
         this.npcData = npcData;
         this.lastCompletedFloor = lastCompletedFloor;
+        questManager = new QuestManager(this, currentQuest);
     }
 
     public void initialize() {
@@ -99,6 +107,10 @@ public class Campaign implements ConfigurationSerializable {
 
     public Arena getArena() {
         return arena;
+    }
+
+    public QuestManager getQuestManager() {
+        return questManager;
     }
 
     public SpigotPlugin getPlugin() {
@@ -170,6 +182,7 @@ public class Campaign implements ConfigurationSerializable {
         map.put("players", players.stream().map(OfflinePlayer::serialize).toArray());
         map.put("npcs", serializeNPCs());
         map.put("castleFloor", lastCompletedFloor);
+        map.put("currentQuest", questManager.getCurrentQuest().name());
         return map;
     }
 
@@ -179,10 +192,12 @@ public class Campaign implements ConfigurationSerializable {
         ArrayList<Map<String, Object>> playerObjects = (ArrayList<Map<String, Object>>) map.get("players");
         List<OfflinePlayer> players = new ArrayList<>();
         int lastCompletedFloor = (int) map.get("castleFloor");
+        QuestManager.Type currentQuest = QuestManager.Type.valueOf((String) map.get("currentQuest"));
+
         for (Map<String, Object> playerObject : playerObjects) {
             players.add(OfflinePlayer.deserialize(playerObject));
         }
-        return new Campaign(campaignName, players, (Map<String, Object>) map.get("npcs"), lastCompletedFloor);
+        return new Campaign(campaignName, players, (Map<String, Object>) map.get("npcs"), lastCompletedFloor, currentQuest);
     }
 
     public static void RegisterConfiguration(SpigotPlugin plugin) {

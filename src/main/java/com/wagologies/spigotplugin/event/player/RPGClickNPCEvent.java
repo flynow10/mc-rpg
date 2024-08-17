@@ -1,9 +1,8 @@
-package com.wagologies.spigotplugin.event;
+package com.wagologies.spigotplugin.event.player;
 
 import com.wagologies.spigotplugin.npc.NPC;
 import com.wagologies.spigotplugin.player.RPGPlayer;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 public class RPGClickNPCEvent extends RPGPlayerEvent implements Cancellable {

@@ -1,10 +1,10 @@
-package com.wagologies.spigotplugin.event;
+package com.wagologies.spigotplugin.event.player;
 
 import com.wagologies.spigotplugin.player.RPGPlayer;
 import org.bukkit.event.player.PlayerEvent;
 
 public abstract class RPGPlayerEvent extends PlayerEvent {
-    private final RPGPlayer rpgPlayer;
+    protected final RPGPlayer rpgPlayer;
     public RPGPlayerEvent(RPGPlayer who) {
         super(who.getPlayer());
         this.rpgPlayer = who;

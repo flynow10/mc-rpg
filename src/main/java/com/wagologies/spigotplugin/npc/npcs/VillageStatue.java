@@ -2,7 +2,7 @@ package com.wagologies.spigotplugin.npc.npcs;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
-import com.wagologies.spigotplugin.event.RPGClickNPCEvent;
+import com.wagologies.spigotplugin.event.player.RPGClickNPCEvent;
 import com.wagologies.spigotplugin.npc.NPC;
 import net.citizensnpcs.trait.HologramTrait;
 import net.citizensnpcs.trait.LookClose;

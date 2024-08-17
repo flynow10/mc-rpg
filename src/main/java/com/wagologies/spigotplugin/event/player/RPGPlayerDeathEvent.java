@@ -1,4 +1,4 @@
-package com.wagologies.spigotplugin.event;
+package com.wagologies.spigotplugin.event.player;
 
 import com.wagologies.spigotplugin.entity.DamageSource;
 import com.wagologies.spigotplugin.player.RPGPlayer;

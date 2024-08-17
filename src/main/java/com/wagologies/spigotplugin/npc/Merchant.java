@@ -5,7 +5,7 @@ import com.samjakob.spigui.item.ItemBuilder;
 import com.samjakob.spigui.menu.SGMenu;
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
-import com.wagologies.spigotplugin.event.RPGClickNPCEvent;
+import com.wagologies.spigotplugin.event.player.RPGClickNPCEvent;
 import com.wagologies.spigotplugin.item.MeleeWeapon;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

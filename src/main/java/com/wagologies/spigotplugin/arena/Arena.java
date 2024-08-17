@@ -2,7 +2,7 @@ package com.wagologies.spigotplugin.arena;
 
 import com.wagologies.spigotplugin.campaign.Campaign;
 import com.wagologies.spigotplugin.campaign.triggers.BoxTrigger;
-import com.wagologies.spigotplugin.event.RPGPlayerDeathEvent;
+import com.wagologies.spigotplugin.event.player.RPGPlayerDeathEvent;
 import com.wagologies.spigotplugin.player.RPGPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

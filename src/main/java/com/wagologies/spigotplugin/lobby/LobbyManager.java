@@ -55,6 +55,7 @@ public class LobbyManager implements Listener {
 
     public void joinPlayer(Player player) {
         lobbyPlayers.add(player);
+        plugin.getPlayerManager().leavePlayer(player);
         player.setHealth(20);
         player.setFoodLevel(20);
         player.setSaturation(5);
