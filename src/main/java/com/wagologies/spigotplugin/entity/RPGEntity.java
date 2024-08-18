@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
@@ -179,6 +180,13 @@ public abstract class RPGEntity {
         if(item instanceof MeleeWeapon meleeWeapon) {
             damage += meleeWeapon.getBaseDamage();
             damageType = meleeWeapon.getDamageType();
+        }
+        if(this.getMainEntity() instanceof HumanEntity humanEntity) {
+            float attackCooldown = humanEntity.getAttackCooldown();
+            if(attackCooldown < 1) {
+                float attackCooldownMultiplier = attackCooldown * 2f / 3f + 0.33333334f;
+                damage = (int) (damage * attackCooldownMultiplier * 0.5);
+            }
         }
         target.damage(new DamageSource(damageType, false, this), Math.max(damage,0));
         return true;

@@ -300,6 +300,12 @@ public class RPGPlayer extends RPGEntity {
     }
 
     @Override
+    public boolean doDamageTarget(RPGEntity target) {
+        this.player.getAttackCooldown();
+        return super.doDamageTarget(target);
+    }
+
+    @Override
     public boolean canTarget(RPGEntity entity) {
         if(isInArena) {
             return !entity.isInvulnerable();
