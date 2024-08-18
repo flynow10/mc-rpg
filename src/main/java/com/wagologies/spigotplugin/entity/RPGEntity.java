@@ -181,7 +181,7 @@ public abstract class RPGEntity {
             damage += meleeWeapon.getBaseDamage();
             damageType = meleeWeapon.getDamageType();
         }
-        if(this.getMainEntity() instanceof HumanEntity humanEntity) {
+        if(this instanceof RPGPlayer && this.getMainEntity() instanceof HumanEntity humanEntity) {
             float attackCooldown = humanEntity.getAttackCooldown();
             if(attackCooldown < 1) {
                 float attackCooldownMultiplier = attackCooldown * 2f / 3f + 0.33333334f;
@@ -194,7 +194,7 @@ public abstract class RPGEntity {
 
     public void onNaturalDamage(EntityDamageEvent event) {
         if(Arrays.stream(NATURAL_CAUSES).anyMatch(cause -> cause.equals(event.getCause()))) {
-            int damage = (int) Math.round((event.getDamage()/20)*this.getMaxHealth());
+            int damage = (int) Math.round((event.getDamage()/40)*this.getMaxHealth());
             DamageSource.DamageType damageType = DamageSource.DamageType.NATURAL;
             if(Arrays.stream(NATURAL_FIRE).anyMatch(cause -> cause.equals(event.getCause()))) {
                 damageType = DamageSource.DamageType.NATURAL_FIRE;

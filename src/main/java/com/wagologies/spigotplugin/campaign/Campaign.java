@@ -3,6 +3,7 @@ package com.wagologies.spigotplugin.campaign;
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.arena.Arena;
 import com.wagologies.spigotplugin.battle.BattleInfo;
+import com.wagologies.spigotplugin.battle.BattleManager;
 import com.wagologies.spigotplugin.battle.CampaignBattle;
 import com.wagologies.spigotplugin.campaign.holograms.FloorDisplay;
 import com.wagologies.spigotplugin.npc.NPC;
@@ -38,23 +39,25 @@ public class Campaign implements ConfigurationSerializable {
     private FloorDisplay floorDisplay;
     private QuestManager questManager;
     private CampaignBattle banditsBattle;
+    private CampaignBattle courtyardBattle;
     private int lastCompletedFloor;
-    private boolean completedBanditBattle = false;
+    private boolean completedBanditBattle;
+    private boolean completedCourtyardBattle;
 
     public Campaign(String name, List<OfflinePlayer> players) {
-        this(name, players, null, 0, QuestManager.Type.TalkToBoatCaptain, false);
+        this(name, players, null, 0, QuestManager.Type.TalkToBoatCaptain, false, false);
     }
 
     // Used for new Campaigns
     public Campaign(String name, World world) {
-        this(name, world, new ArrayList<>(), null, 0, QuestManager.Type.TalkToBoatCaptain, false);
+        this(name, world, new ArrayList<>(), null, 0, QuestManager.Type.TalkToBoatCaptain, false, false);
     }
 
-    public Campaign(String name, List<OfflinePlayer> players, Map<String, Object> npcConfiguration, int lastCompletedFloor, QuestManager.Type currentQuest, boolean completedBanditBattle) {
-        this(name, WorldHelper.loadWorld(name), players, npcConfiguration, lastCompletedFloor, currentQuest, completedBanditBattle);
+    public Campaign(String name, List<OfflinePlayer> players, Map<String, Object> npcConfiguration, int lastCompletedFloor, QuestManager.Type currentQuest, boolean completedBanditBattle, boolean completedCourtyardBattle) {
+        this(name, WorldHelper.loadWorld(name), players, npcConfiguration, lastCompletedFloor, currentQuest, completedBanditBattle, completedCourtyardBattle);
     }
 
-    public Campaign(String name, World world, List<OfflinePlayer> players, Map<String, Object> npcData, int lastCompletedFloor, QuestManager.Type currentQuest, boolean completedBanditBattle) {
+    public Campaign(String name, World world, List<OfflinePlayer> players, Map<String, Object> npcData, int lastCompletedFloor, QuestManager.Type currentQuest, boolean completedBanditBattle, boolean completedCourtyardBattle) {
         this.name = name;
         this.world = world;
         this.players.addAll(players);
@@ -62,19 +65,30 @@ public class Campaign implements ConfigurationSerializable {
         this.lastCompletedFloor = lastCompletedFloor;
         this.loadedQuest = currentQuest;
         this.completedBanditBattle = completedBanditBattle;
+        this.completedCourtyardBattle = completedCourtyardBattle;
     }
 
     public void initialize() {
         arena = new Arena(this);
         floorDisplay = new FloorDisplay(this);
         questManager = new QuestManager(this, loadedQuest);
-        BattleInfo banditBattleInfo = getPlugin().getBattleManager().getBattle("bandits");
+        BattleManager battleManager = getPlugin().getBattleManager();
         if(!completedBanditBattle) {
+            BattleInfo banditBattleInfo = battleManager.getBattle("bandits");
             banditsBattle = new CampaignBattle(this, banditBattleInfo);
             banditsBattle.addBattleEndListener((success) -> {
                 if(success) {
                     this.completedBanditBattle = true;
                     this.questManager.triggerNewQuest(QuestManager.Type.ReturnToCamper);
+                }
+            });
+        }
+        if(!completedCourtyardBattle) {
+            BattleInfo courtyardBattleInfo = battleManager.getBattle("castle-courtyard");
+            courtyardBattle = new CampaignBattle(this, courtyardBattleInfo);
+            courtyardBattle.addBattleEndListener((success) -> {
+                if(success) {
+                    this.completedCourtyardBattle = true;
                 }
             });
         }
@@ -215,6 +229,7 @@ public class Campaign implements ConfigurationSerializable {
         map.put("castleFloor", lastCompletedFloor);
         map.put("currentQuest", questManager.getCurrentQuest().name());
         map.put("completedBanditBattle", completedBanditBattle);
+        map.put("completedCourtyardBattle", completedCourtyardBattle);
         return map;
     }
 
@@ -227,11 +242,12 @@ public class Campaign implements ConfigurationSerializable {
         QuestManager.Type currentQuest = QuestManager.Type.valueOf((String) map.get("currentQuest"));
 
         boolean completedBanditBattle = (boolean) map.get("completedBanditBattle");
+        boolean completedCourtyardBattle = (boolean) map.get("completedCourtyardBattle");
 
         for (Map<String, Object> playerObject : playerObjects) {
             players.add(OfflinePlayer.deserialize(playerObject));
         }
-        return new Campaign(campaignName, players, (Map<String, Object>) map.get("npcs"), lastCompletedFloor, currentQuest, completedBanditBattle);
+        return new Campaign(campaignName, players, (Map<String, Object>) map.get("npcs"), lastCompletedFloor, currentQuest, completedBanditBattle, completedCourtyardBattle);
     }
 
     public static void RegisterConfiguration(SpigotPlugin plugin) {

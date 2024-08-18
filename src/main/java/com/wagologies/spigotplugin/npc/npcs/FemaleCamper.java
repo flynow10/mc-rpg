@@ -47,7 +47,14 @@ public class FemaleCamper extends NPC {
     );
 
     public Conversation thankYou = new Conversation(
-            new Conversation.Speak("Thank you so much for helping us get our money back!")
+            new Conversation.Speak("Thank you so much for helping us get our money back!"),
+            new Conversation.Speak("We've decided we kind of like this camp ground, so after our backpacking trip we'll be headed back here."),
+            new Conversation.CustomRunnable((players, npc, conversation) -> {
+                QuestManager questManager = this.getCampaign().getQuestManager();
+                if(questManager.getCurrentQuest().equals(QuestManager.Type.ReturnToCamper)) {
+                    questManager.triggerNewQuest(QuestManager.Type.MeetMayor);
+                }
+            })
     );
 
     public FemaleCamper(SpigotPlugin plugin, Campaign campaign) {
@@ -104,7 +111,7 @@ public class FemaleCamper extends NPC {
                             ),
                             new DialogTree.ConversationNode("thank-you", DialogTree.EXIT_NODE,
                                     new Conversation.Speak("Great! Just head up that path towards the village, and you're bound to find them."),
-                                    new Conversation.Speak("Thank you so much for you're help!")
+                                    new Conversation.Speak("Thank you again for you're help!")
                             ),
                             new DialogTree.YesNoNode("is-ready", "thank-you", DialogTree.EXIT_NODE, "Yes!", "Not yet...")
                     ),

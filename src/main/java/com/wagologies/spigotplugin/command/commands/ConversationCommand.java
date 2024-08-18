@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 public class ConversationCommand extends PlayerCommand {
     public ConversationCommand(SpigotPlugin plugin) {
         super(plugin, "conversation");
+        this.setPermission("");
     }
 
     @Override

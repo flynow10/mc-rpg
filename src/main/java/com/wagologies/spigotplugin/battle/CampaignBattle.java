@@ -56,13 +56,16 @@ public class CampaignBattle implements Listener {
         World world = campaign.getWorld();
         battleInfo.getBattleBorder().addToWorld(world);
         for (BattleInfo.SpawnLocation spawnLocation : battleInfo.getSpawnLocations()) {
+            int mobCount = spawnLocation.getMobTypes().size();
             for (MobType mobType : spawnLocation.getMobTypes()) {
                 RPGEntity mob = campaign.getPlugin().getEntityManager().spawn(mobType, spawnLocation.getLocation().toLocation(world));
                 entities.add(mob);
-                Vector random = Vector.getRandom();
-                random = random.subtract(new Vector(0.5,0.5,0.5));
-                random = random.setY(0.5);
-                mob.getMainEntity().setVelocity(random);
+                if(mobCount > 1) {
+                    Vector random = Vector.getRandom();
+                    random = random.subtract(new Vector(0.5,0.5,0.5));
+                    random = random.setY(0.5);
+                    mob.getMainEntity().setVelocity(random);
+                }
             }
         }
     }
@@ -73,7 +76,7 @@ public class CampaignBattle implements Listener {
 
     public void endBattle(boolean success) {
         for(RPGEntity mob : entities) {
-            if(!mob.isRemoved()) {
+            if(!mob.isDead() && !mob.isRemoved()) {
                 mob.remove(false);
             }
         }
@@ -102,7 +105,6 @@ public class CampaignBattle implements Listener {
     @EventHandler
     public void onEntityDeath(RPGEntityDeathEvent event) {
         if(entities.contains(event.getEntity())) {
-            System.out.println("Enemy Died");
             if(isBattleOver()) {
                 endBattle(true);
             }

@@ -3,6 +3,7 @@ package com.wagologies.spigotplugin.dungeon;
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
 import com.wagologies.spigotplugin.campaign.PointOfInterest;
+import com.wagologies.spigotplugin.campaign.QuestManager;
 import com.wagologies.spigotplugin.dungeon.generator.Generator;
 import com.wagologies.spigotplugin.dungeon.generator.Room;
 import com.wagologies.spigotplugin.entity.RPGEntity;
@@ -70,9 +71,11 @@ public class Dungeon implements Listener {
 
         state = DungeonState.Running;
 
+        QuestManager questManager = campaign.getQuestManager();
         for(RPGPlayer player : players) {
             player.getPlayer().teleport(getSpawnLocation());
             player.setInDungeon(true);
+            questManager.hideBar(player);
             bossBar.addPlayer(player.getPlayer());
         }
         bossBar.setVisible(true);
@@ -94,8 +97,10 @@ public class Dungeon implements Listener {
             dungeonGenerator.cleanupDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world), async);
             castleGuard.despawn();
         }
+        QuestManager questManager = campaign.getQuestManager();
         for(RPGPlayer player : players) {
             player.setInDungeon(false);
+            questManager.showBar(player);
         }
         bossBar.removeAll();
         bossBar.setVisible(false);

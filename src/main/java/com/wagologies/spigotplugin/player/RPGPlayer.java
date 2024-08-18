@@ -50,6 +50,7 @@ public class RPGPlayer extends RPGEntity {
     private boolean isInConversation = false;
     private boolean isInArena = false;
     private boolean isInDungeon = false;
+    private boolean isInBattle = false;
     private SternalBoard scoreboard;
 
     public RPGPlayer(Player player, SpigotPlugin plugin, Campaign campaign) {
@@ -110,6 +111,11 @@ public class RPGPlayer extends RPGEntity {
             return;
         }
         super.die(damageSource);
+
+        setHealth(getMaxHealth());
+        setMana(getMaxMana());
+        QuestManager.Type quest = campaign.getQuestManager().getCurrentQuest();
+        player.teleport(quest.getRespawnLocation().toLocation(campaign.getWorld()));
     }
 
     @Override
@@ -121,8 +127,6 @@ public class RPGPlayer extends RPGEntity {
             updateOfflinePlayer();
             removeScoreboard();
             playerListener.removeListener();
-        } else {
-            setHealth(getMaxHealth());
         }
     }
 
@@ -334,6 +338,10 @@ public class RPGPlayer extends RPGEntity {
 
     public int getMana() {
         return mana;
+    }
+
+    public void setMana(int mana) {
+        this.mana = mana;
     }
 
     public int getMaxMana() {

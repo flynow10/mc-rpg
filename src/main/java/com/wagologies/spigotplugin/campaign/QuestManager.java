@@ -58,6 +58,18 @@ public class QuestManager implements Listener {
         }
     }
 
+    public void hideBar(RPGPlayer player) {
+        if(player.getCampaign().equals(campaign)) {
+            questBar.removePlayer(player.getPlayer());
+        }
+    }
+
+    public void showBar(RPGPlayer player) {
+        if(player.getCampaign().equals(campaign)) {
+            questBar.addPlayer(player.getPlayer());
+        }
+    }
+
     @EventHandler
     public void onPlayerJoin(RPGPlayerJoinEvent event) {
         RPGPlayer player = event.getRPGPlayer();
@@ -75,25 +87,27 @@ public class QuestManager implements Listener {
     }
 
     public enum Type {
-        TalkToBoatCaptain("Talk to the Boat Captain"),
-        MeetMayor("Meet with the Mayor"),
-        PrepareForBandits("Prepare for the fight"),
-        FightBandits("Fight the Bandits!"),
-        ReturnToCamper("Return to the Campers"),
-        StormCastle("Storm the Castle"),
-        ReachThroneRoom("Reach the Throne Room"),
-        DestroyBoss("Destroy the Ice Princess " + ChatColor.AQUA + "Isadora Glacia");
+        TalkToBoatCaptain("Talk to the Boat Captain", PointOfInterest.NEW_CAMPAIGN),
+        MeetMayor("Meet with the Mayor", PointOfInterest.CAMP_RESPAWN),
+        PrepareForBandits("Prepare for the fight", PointOfInterest.CAMP_RESPAWN),
+        FightBandits("Fight the Bandits!", PointOfInterest.CAMP_RESPAWN),
+        ReturnToCamper("Return to the Campers", PointOfInterest.CAMP_RESPAWN),
+        StormCastle("Storm the Castle", PointOfInterest.HOUSE_RESPAWN),
+        ReachThroneRoom("Reach the Throne Room", PointOfInterest.HOUSE_RESPAWN),
+        DestroyBoss("Defeat the Ice Princess " + ChatColor.AQUA + "Isadora Glacia", PointOfInterest.HOUSE_RESPAWN);
 
         private final String title;
         private final BarColor color;
+        private final PointOfInterest respawnLocation;
 
-        Type(String title) {
-            this(title, null);
+        Type(String title, PointOfInterest respawnLocation) {
+            this(title, null, respawnLocation);
         }
 
-        Type(String title, BarColor color) {
+        Type(String title, BarColor color, PointOfInterest respawnLocation) {
             this.title = title;
             this.color = color;
+            this.respawnLocation = respawnLocation;
         }
 
         public String getTitle() {
@@ -102,6 +116,10 @@ public class QuestManager implements Listener {
 
         public BarColor getColor() {
             return color;
+        }
+
+        public PointOfInterest getRespawnLocation() {
+            return respawnLocation;
         }
     }
 }

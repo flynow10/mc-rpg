@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 public class LobbyCommand extends PlayerCommand {
     public LobbyCommand(SpigotPlugin plugin) {
         super(plugin, "lobby");
+        this.setPermission("");
     }
 
     @Override

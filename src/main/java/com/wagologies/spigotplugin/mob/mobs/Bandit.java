@@ -2,9 +2,7 @@ package com.wagologies.spigotplugin.mob.mobs;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.entity.DamageSource;
-import com.wagologies.spigotplugin.item.Armor;
-import com.wagologies.spigotplugin.item.RPGItem;
-import com.wagologies.spigotplugin.item.MeleeWeapon;
+import com.wagologies.spigotplugin.item.*;
 import com.wagologies.spigotplugin.mob.MobType;
 import com.wagologies.spigotplugin.mob.PlayerMob;
 import net.citizensnpcs.api.trait.trait.Equipment;
@@ -25,6 +23,7 @@ public class Bandit extends PlayerMob {
         super.spawn(location);
         Equipment equipment = npc.getOrAddTrait(Equipment.class);
         equipment.set(Equipment.EquipmentSlot.CHESTPLATE, new ItemStack(Material.GOLDEN_CHESTPLATE));
+        equipment.set(Equipment.EquipmentSlot.HAND, new ItemStack(Material.IRON_SWORD));
     }
 
     @Override
@@ -35,10 +34,12 @@ public class Bandit extends PlayerMob {
     @Nullable
     @Override
     public RPGItem getHeldItem() {
-        MeleeWeapon scimitar = new MeleeWeapon(plugin, new ItemStack(Material.IRON_SWORD));
-        scimitar.setBaseDamage(4);
-        scimitar.setDamageType(DamageSource.DamageType.PIERCING);
-        return scimitar;
+        return new RPGItemBuilder(Material.IRON_SWORD)
+                .name("Scimitar")
+                .customType(ItemType.MELEE_WEAPON)
+                .damage(7)
+                .damageType(DamageSource.DamageType.PIERCING)
+                .build(plugin);
     }
 
     @Override
