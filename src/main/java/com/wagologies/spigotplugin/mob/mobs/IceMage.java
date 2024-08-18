@@ -7,16 +7,38 @@ import com.wagologies.spigotplugin.item.Wand;
 import com.wagologies.spigotplugin.item.WandCoreType;
 import com.wagologies.spigotplugin.mob.MobType;
 import com.wagologies.spigotplugin.mob.PlayerMob;
+import com.wagologies.spigotplugin.spell.SpellManager;
+import com.wagologies.spigotplugin.spell.SpellType;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Random;
 
 public class IceMage extends PlayerMob {
+    private Random rand = new Random();
     public IceMage(SpigotPlugin plugin) {
         super(plugin);
         setAbilityScores(0, 0,0,0,0,0);
     }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if(tickCount % 250 == 0) {
+            SpellManager spellManager = plugin.getSpellManager();
+            SpellType[] spells = new SpellType[] {
+                    SpellType.EldritchBlast,
+                    SpellType.GustOfWind,
+                    SpellType.MagicMissile
+            };
+            spellManager.castSpell(this, spells[rand.nextInt(spells.length)]);
+        }
+    }
+
+    @Override
+    protected void startNavigation() {}
 
     @Override
     public MobType getType() {
@@ -25,7 +47,7 @@ public class IceMage extends PlayerMob {
 
     @Override
     public int getMaxHealth() {
-        return 100;
+        return 75;
     }
 
     @Nullable

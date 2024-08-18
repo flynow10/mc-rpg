@@ -12,7 +12,8 @@ public enum MobType {
     DIRE_WOLF("Dire Wolf", DireWolf.class),
     WOLF("Wolf", Wolf.class),
     DUMMY("Dummy", Dummy.class),
-    ICE_MAGE("Ice Mage", IceMage.class);
+    ICE_MAGE("Ice Mage", IceMage.class),
+    ICE_WARRIOR("Ice Warrior", IceWarrior.class);
 
     private final String name;
     private final Class<? extends AbstractMob> mobClass;

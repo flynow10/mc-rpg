@@ -11,10 +11,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityRemoveEvent;
+import org.bukkit.event.entity.*;
+import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.util.BoundingBox;
 
 import java.util.Arrays;
@@ -38,6 +36,7 @@ public abstract class EntityMob extends AbstractMob implements Listener {
         LivingEntity entity = createEntity(world, location);
         this.entity = entity;
         entity.setRemoveWhenFarAway(false);
+        entity.setPersistent(true);
         world.addEntity(entity);
         updateName();
     }
@@ -112,6 +111,17 @@ public abstract class EntityMob extends AbstractMob implements Listener {
         if(event.getEntity().equals(entity)) {
             event.getDrops().clear();
             event.setDroppedExp(0);
+        }
+    }
+
+    @EventHandler
+    public void onEntityLoad(EntitiesLoadEvent event) {
+        for (Entity entity : event.getEntities()) {
+            if(entity.getUniqueId().equals(this.entity.getUniqueId())) {
+                Location loc = entity.getLocation();
+                entity.remove();
+                spawn(loc);
+            }
         }
     }
 }

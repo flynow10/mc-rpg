@@ -81,7 +81,7 @@ public class Arena implements Listener {
         }
         if(arenaMode == Mode.TRAINING) {
             EntityManager em = campaign.getPlugin().getEntityManager();
-            entities.add(em.spawn(MobType.DUMMY, new Location(campaign.getWorld(), 616.5, 76, 895.5)));
+            entities.add(em.spawn(MobType.DUMMY, new Location(campaign.getWorld(), 606.5, 76, 895.5)));
         }
     }
 

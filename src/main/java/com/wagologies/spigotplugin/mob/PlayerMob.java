@@ -102,8 +102,14 @@ public abstract class PlayerMob extends AbstractMob implements Listener {
 
     protected void setTarget(@Nullable RPGPlayer newTarget) {
         target = newTarget;
-        if(newTarget != null) {
-            npc.getNavigator().setTarget(newTarget.getMainEntity(), true);
+        startNavigation();
+    }
+
+    protected void startNavigation() {
+        if(target != null) {
+            npc.getNavigator().setTarget(target.getMainEntity(), true);
+        } else {
+            npc.getNavigator().cancelNavigation();
         }
     }
 
@@ -168,6 +174,7 @@ public abstract class PlayerMob extends AbstractMob implements Listener {
             RPGEntity rpgEntity = plugin.getEntityManager().getEntity(event.getEntity());
             if(rpgEntity != null) {
                 doDamageTarget(rpgEntity);
+                npc.getNavigator().cancelNavigation();
             }
         }
     }

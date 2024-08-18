@@ -227,7 +227,7 @@ public abstract class RPGEntity {
     }
 
     public boolean isEntityPart(Entity entity) {
-        return getMainEntity().equals(entity);
+        return getMainEntity().getUniqueId().equals(entity.getUniqueId());
     }
 
     public boolean isDeadOrDying() {

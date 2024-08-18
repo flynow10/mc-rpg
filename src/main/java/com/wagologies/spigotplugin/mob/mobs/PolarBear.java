@@ -45,6 +45,6 @@ public class PolarBear extends EntityMob {
         CraftWorld craftWorld = (CraftWorld) world;
         EntityPolarBear polarBear = new EntityPolarBear(plugin, craftWorld.getHandle());
         polarBear.setPos(location);
-        return (LivingEntity) polarBear.getBukkitEntity();
+        return (org.bukkit.entity.PolarBear) polarBear.getBukkitEntity();
     }
 }

@@ -40,7 +40,7 @@ public class DungeonManager {
 
     public void cleanupDungeons() {
         for (Dungeon dungeon : new ArrayList<>(dungeons)) {
-            dungeon.cleanup(false);
+            dungeon.cleanup();
         }
     }
 }

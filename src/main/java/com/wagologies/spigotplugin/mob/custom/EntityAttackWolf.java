@@ -15,6 +15,7 @@ public class EntityAttackWolf extends EntityWolf {
     public EntityAttackWolf(SpigotPlugin plugin, World world) {
         super(EntityTypes.bp, world);
         this.plugin = plugin;
+        this.persist = true;
         addTargetSelectorGoals();
     }
 

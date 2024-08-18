@@ -1,6 +1,7 @@
 package com.wagologies.spigotplugin.player;
 
 import com.wagologies.spigotplugin.item.ItemType;
+import com.wagologies.spigotplugin.item.MeleeWeapon;
 import com.wagologies.spigotplugin.item.RPGItemBuilder;
 import com.wagologies.spigotplugin.item.WandCoreType;
 import com.wagologies.spigotplugin.utils.SerializeInventory;
@@ -22,7 +23,7 @@ public class StarterKit {
 
     static {
         RPGItemBuilder[] barbarianItems = new RPGItemBuilder[] {
-                new RPGItemBuilder(Material.IRON_AXE).customType(ItemType.MELEE_WEAPON).name("Greataxe").damage(12),
+                new RPGItemBuilder(Material.IRON_AXE).customType(ItemType.MELEE_WEAPON).name("Greataxe").damage(12).attackSpeed(MeleeWeapon.AttackSpeed.SLOW),
                 new RPGItemBuilder(Material.LEATHER_CHESTPLATE).customType(ItemType.ARMOR).name("Patchy Shirt").armorClass(4).weight(2),
                 new RPGItemBuilder(Material.LEATHER_LEGGINGS).customType(ItemType.ARMOR).name("Patchy Pants").armorClass(4).weight(2),
                 new RPGItemBuilder(Material.LEATHER_BOOTS).customType(ItemType.ARMOR).name("Light Boots").armorClass(3).weight(2)
@@ -36,7 +37,8 @@ public class StarterKit {
         };
         Bard = new StarterKit("Bard", "An inspiring magician whose power echoes the music of creation.", bardItems, Material.MUSIC_DISC_5, ChatColor.LIGHT_PURPLE);
         RPGItemBuilder[] rogueItems = new RPGItemBuilder[] {
-                new RPGItemBuilder(Material.WOODEN_SWORD).customType(ItemType.MELEE_WEAPON).name("Small Dagger").damage(7),
+                new RPGItemBuilder(Material.WOODEN_SWORD).customType(ItemType.MELEE_WEAPON).name("Light Dagger").damage(7).attackSpeed(
+                        MeleeWeapon.AttackSpeed.FAST),
                 new RPGItemBuilder(Material.LEATHER_CHESTPLATE).customType(ItemType.ARMOR).name("Patchy Cowl").color(
                         Color.fromRGB(0x060606)).armorClass(4).weight(2),
                 new RPGItemBuilder(Material.LEATHER_LEGGINGS).customType(ItemType.ARMOR).name("Dark Pants").color(Color.fromRGB(0x060606)).armorClass(4).weight(2),

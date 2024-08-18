@@ -1,6 +1,7 @@
 package com.wagologies.spigotplugin.command.commands;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
+import com.wagologies.spigotplugin.campaign.PointOfInterest;
 import com.wagologies.spigotplugin.command.PlayerCommand;
 import com.wagologies.spigotplugin.entity.RPGEntity;
 import com.wagologies.spigotplugin.mob.*;
@@ -23,9 +24,13 @@ public class SpawnCommand extends PlayerCommand {
     @Override
     public boolean playerExecutor(Player player, String s, String[] strings) {
         if(strings.length >= 1) {
+            boolean usePlayerLoc = true;
+            if (strings.length >= 2) {
+                usePlayerLoc = false;
+            }
             try {
                 MobType mobType = Arrays.stream(MobType.values()).filter(type -> type.getName().replaceAll(" ", "").equals(strings[0])).findAny().orElseThrow();
-                RPGEntity entity = plugin.getEntityManager().spawn(mobType, player.getLocation());
+                RPGEntity entity = plugin.getEntityManager().spawn(mobType, usePlayerLoc ? player.getLocation() : PointOfInterest.DUNGEON_GENERATION.toLocation(player.getWorld()));
                 player.sendMessage(ChatColor.GREEN + "Successfully spawned a " + entity.getName());
             } catch (NoSuchElementException e) {
                 player.sendMessage(ChatColor.RED + "There is no mob type named " + strings[0] + "!");

@@ -5,5 +5,5 @@ main: com.wagologies.spigotplugin.SpigotPlugin
 depend:
   - ProtocolLib
   - Citizens
-  - FastAsyncWorldEdit
+  - WorldEdit
   - DecentHolograms

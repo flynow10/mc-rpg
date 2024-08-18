@@ -10,6 +10,7 @@ import com.wagologies.spigotplugin.entity.RPGEntity;
 import com.wagologies.spigotplugin.event.RPGEntityDeathEvent;
 import com.wagologies.spigotplugin.npc.npcs.InsideCastleGuard;
 import com.wagologies.spigotplugin.player.RPGPlayer;
+import com.wagologies.spigotplugin.spell.SpellManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -19,6 +20,8 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +65,7 @@ public class Dungeon implements Listener {
             state = DungeonState.AwaitingPaste;
             for(RPGPlayer player : players) {
                 player.getPlayer().sendMessage(ChatColor.GREEN + "The castle will open momentarily...");
+                player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, PotionEffect.INFINITE_DURATION, 10, false, false));
             }
             pasteDungeon();
             return;
@@ -72,7 +76,10 @@ public class Dungeon implements Listener {
         state = DungeonState.Running;
 
         QuestManager questManager = campaign.getQuestManager();
+        SpellManager spellManager = plugin.getSpellManager();
         for(RPGPlayer player : players) {
+            spellManager.cancelEntitySpells(player);
+            player.getPlayer().removePotionEffect(PotionEffectType.BLINDNESS);
             player.getPlayer().teleport(getSpawnLocation());
             player.setInDungeon(true);
             questManager.hideBar(player);
@@ -82,10 +89,6 @@ public class Dungeon implements Listener {
     }
 
     public void cleanup() {
-        this.cleanup(true);
-    }
-
-    public void cleanup(boolean async) {
         if(state == DungeonState.AwaitingPaste) {
             throw new IllegalStateException("Cannot clean up a dungeon while pasting is in progress!");
         }
@@ -94,7 +97,7 @@ public class Dungeon implements Listener {
         }
         if(state.pastSetup()) {
             World world = campaign.getWorld();
-            dungeonGenerator.cleanupDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world), async);
+            dungeonGenerator.cleanupDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world));
             castleGuard.despawn();
         }
         QuestManager questManager = campaign.getQuestManager();
@@ -131,17 +134,15 @@ public class Dungeon implements Listener {
     }
 
     private void pasteDungeon() {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            World world = campaign.getWorld();
-            dungeonGenerator.pasteDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world));
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                if(state == DungeonState.AwaitingPaste) {
-                    state = DungeonState.FinishedSetup;
-                    start();
-                } else {
-                    state = DungeonState.FinishedSetup;
-                }
-            });
+        World world = campaign.getWorld();
+        dungeonGenerator.pasteDungeon(world, PointOfInterest.DUNGEON_GENERATION.toLocation(world));
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if(state == DungeonState.AwaitingPaste) {
+                state = DungeonState.FinishedSetup;
+                start();
+            } else {
+                state = DungeonState.FinishedSetup;
+            }
         });
     }
 

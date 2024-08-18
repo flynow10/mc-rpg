@@ -1,6 +1,7 @@
 package com.wagologies.spigotplugin.dungeon.generator;
 
 import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -80,7 +81,7 @@ public class Generator {
         pasteEntrySchematic(world, origin);
     }
 
-    private void _internalCleanupDungeon(World world, Location origin) {
+    public void cleanupDungeon(World world, Location origin) {
         com.sk89q.worldedit.world.World worldEditWorld = BukkitAdapter.adapt(world);
         BlockState airBlock = Objects.requireNonNull(BlockTypes.AIR).getDefaultState();
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(worldEditWorld)) {
@@ -98,20 +99,8 @@ public class Generator {
             BlockVector3 pos2 = BlockVector3.at(pos1.x() + entryDimensions.x(), pos1.y() + entryDimensions.y(), pos1.z() + entryDimensions.z());
             Region entryRoom = new CuboidRegion(pos1, pos2);
             editSession.setBlocks(entryRoom, airBlock);
-        }
-    }
-
-    public void cleanupDungeon(World world, Location origin) {
-        this.cleanupDungeon(world, origin, true);
-    }
-
-    public void cleanupDungeon(World world, Location origin, boolean async) {
-        if(async) {
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                _internalCleanupDungeon(world, origin);
-            });
-        } else {
-            _internalCleanupDungeon(world, origin);
+        } catch (MaxChangedBlocksException e) {
+            throw new RuntimeException(e);
         }
     }
 

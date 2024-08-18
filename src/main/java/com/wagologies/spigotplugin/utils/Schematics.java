@@ -1,6 +1,5 @@
 package com.wagologies.spigotplugin.utils;
 
-import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
@@ -30,9 +29,7 @@ import org.enginehub.linbus.tree.LinTagType;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 public class Schematics {
