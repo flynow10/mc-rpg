@@ -127,7 +127,10 @@ public abstract class PlayerMob extends AbstractMob implements Listener {
     public void remove(boolean isDead) {
         super.remove(isDead);
         if(isDead) {
-            ((LivingEntity)npc.getEntity()).setHealth(0);
+            Entity entity = npc.getEntity();
+            if(entity instanceof LivingEntity livingEntity) {
+                livingEntity.setHealth(0);
+            }
         }
         npc.destroy();
         HandlerList.unregisterAll(this);

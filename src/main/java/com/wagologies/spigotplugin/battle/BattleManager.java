@@ -15,7 +15,7 @@ public class BattleManager {
     private final File configFile;
     private final SpigotPlugin plugin;
 
-    private final List<Battle> battles = new ArrayList<>();
+    private final List<BattleInfo> battleInfos = new ArrayList<>();
 
     public BattleManager(SpigotPlugin plugin) {
         this.plugin = plugin;
@@ -29,24 +29,24 @@ public class BattleManager {
         plugin.getLogger().info("Loaded Battle Manager");
     }
 
-    public List<Battle> getBattles() {
-        return battles;
+    public List<BattleInfo> getBattles() {
+        return battleInfos;
     }
 
     protected SpigotPlugin getPlugin() {
         return plugin;
     }
 
-    public Battle createBattle(String name) {
-        Battle battle = new Battle();
-        battle.setBattleId(StringHelper.nanoId());
-        battle.setName(name);
-        this.battles.add(battle);
-        return battle;
+    public BattleInfo createBattle(String name) {
+        BattleInfo battleInfo = new BattleInfo();
+        battleInfo.setBattleId(StringHelper.nanoId());
+        battleInfo.setName(name);
+        this.battleInfos.add(battleInfo);
+        return battleInfo;
     }
 
-    public Battle getBattle(String name) {
-        Optional<Battle> optionalBattle =  battles.stream().filter(battle -> battle.getName().equals(name)).findAny();
+    public BattleInfo getBattle(String name) {
+        Optional<BattleInfo> optionalBattle =  battleInfos.stream().filter(battle -> battle.getName().equals(name)).findAny();
         if(optionalBattle.isEmpty()) {
             throw new RuntimeException("Could not find battle with this name!");
         }
@@ -54,15 +54,15 @@ public class BattleManager {
     }
 
     public void saveBattles() {
-        for (Battle battle : battles) {
-            battleConfig.set("battles." + battle.getBattleId(), battle);
+        for (BattleInfo battleInfo : battleInfos) {
+            battleConfig.set("battles." + battleInfo.getBattleId(), battleInfo);
         }
         try {
             battleConfig.save(configFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        plugin.getLogger().info("Successfully saved " + battles.size() + " battles to disk");
+        plugin.getLogger().info("Successfully saved " + battleInfos.size() + " battles to disk");
     }
 
 
@@ -73,11 +73,10 @@ public class BattleManager {
         }
         Set<String> battleIds = battleSection.getKeys(false);
         for (String battleId : battleIds) {
-            Battle battle = (Battle) battleSection.get(battleId);
-            assert battle != null;
-            battle.setBattleId(battleId);
-            battle.setBattleManager(this);
-            battles.add(battle);
+            BattleInfo battleInfo = (BattleInfo) battleSection.get(battleId);
+            assert battleInfo != null;
+            battleInfo.setBattleId(battleId);
+            battleInfos.add(battleInfo);
         }
     }
 }

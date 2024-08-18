@@ -39,7 +39,7 @@ public class BoatCaptain extends NPC {
                 new Conversation.Speak(
                         "Be careful as you head up the path. I hear there the town has been plagued by monster attacks from the mountain!"),
                 new Conversation.Speak("Good luck and be safe on your travels adventurer!"),
-                new Conversation.CustomRunnable((rpgPlayers, npc, conversation) -> this.getCampaign().getQuestManager().setCurrentQuest(QuestManager.Type.MeetMayor))
+                new Conversation.CustomRunnable((rpgPlayers, npc, conversation) -> this.getCampaign().getQuestManager().triggerNewQuest(QuestManager.Type.MeetMayor))
         ).addPlayer(event.getRPGPlayer(), this, getPlugin());
     }
 }

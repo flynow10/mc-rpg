@@ -55,8 +55,8 @@ public class DialogTree extends Conversation.InteractionStep {
     @Override
     protected void onReceiveInteraction(ConversationInteractionEvent event) {
         Node currentNode = getCurrentNode();
-        if(currentNode instanceof OptionNode optionNode) {
-            boolean didAccept = optionNode.acceptOption(event.getResponse(), this, event.getPlayer());
+        if(currentNode instanceof InteractionNode interactionNode) {
+            boolean didAccept = interactionNode.acceptInteraction(event.getResponse(), this, event.getPlayer());
             if(!didAccept) {
                 event.getPlayer().getPlayer().sendMessage(ChatColor.RED + "This option has already been used or has expired!");
             }
@@ -79,6 +79,10 @@ public class DialogTree extends Conversation.InteractionStep {
         }
 
         public abstract void run(SpigotPlugin plugin, DialogTree dialogTree, RPGPlayer player, NPC npc, Conversation conversation);
+    }
+
+    public interface InteractionNode {
+        boolean acceptInteraction(String response, DialogTree dialogTree, RPGPlayer player);
     }
 
     public static class ConversationNode extends Node {
@@ -111,8 +115,73 @@ public class DialogTree extends Conversation.InteractionStep {
             }, totalTime);
         }
     }
+    public static class YesNoNode extends Node implements InteractionNode {
 
-    public static class OptionNode extends Node {
+        private final String acceptNode;
+        private final String denyNode;
+        private final String acceptText;
+        private final String denyText;
+
+        public YesNoNode(String nodeId, String acceptNode, String denyNode) {
+            this(nodeId, acceptNode, denyNode, "Accept", "Deny");
+        }
+
+        public YesNoNode(String nodeId, String acceptNode, String denyNode, String acceptText, String denyText) {
+            super(nodeId);
+            this.acceptNode = acceptNode;
+            this.denyNode = denyNode;
+            this.acceptText = acceptText;
+            this.denyText = denyText;
+        }
+
+        @Override
+        public void run(SpigotPlugin plugin, DialogTree dialogTree, RPGPlayer player, NPC npc, Conversation conversation) {
+            player.getPlayer().sendMessage("");
+            BaseComponent chatQuestion = getChatQuestion(dialogTree);
+            player.getPlayer().spigot().sendMessage(chatQuestion);
+            player.getPlayer().sendMessage("");
+        }
+
+        public BaseComponent getChatQuestion(DialogTree dialogTree) {
+            String acceptCommand = dialogTree.getCommandBase() + "yes";
+            String denyCommand = dialogTree.getCommandBase() + "no";
+            return new ComponentBuilder()
+                    .append("   ")
+                    .append("[" + acceptText + "]")
+                    .color(net.md_5.bungee.api.ChatColor.GREEN).bold(true)
+                    .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(acceptText)))
+                    .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, acceptCommand))
+                    .append("   ")
+                    .append("[" + denyText + "]")
+                    .color(net.md_5.bungee.api.ChatColor.RED).bold(true)
+                    .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(denyText)))
+                    .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, denyCommand))
+                    .build();
+        }
+
+        @Override
+        public boolean acceptInteraction(String response, DialogTree dialogTree, RPGPlayer player) {
+            String nextNode;
+            String optionText;
+            if(response.equals("yes")) {
+                nextNode = acceptNode;
+                optionText = acceptText;
+            } else if(response.equals("no")) {
+                nextNode = denyNode;
+                optionText = denyText;
+            } else {
+                return false;
+            }
+            if(!nextNode.equals(DialogTree.EXIT_NODE)) {
+                player.getPlayer().sendMessage(ChatColor.GRAY + "[" + player.getName() +"]: " + ChatColor.YELLOW + optionText);
+            }
+            dialogTree.runNode(nextNode);
+
+            return true;
+        }
+    }
+
+    public static class OptionNode extends Node implements InteractionNode{
         protected final String prompt;
         protected final boolean numbered;
         protected final List<Option> options;
@@ -166,7 +235,7 @@ public class DialogTree extends Conversation.InteractionStep {
             return optionBuilder.build();
         }
 
-        public boolean acceptOption(String optionId, DialogTree dialogTree, RPGPlayer player) {
+        public boolean acceptInteraction(String optionId, DialogTree dialogTree, RPGPlayer player) {
             for(Option option : options) {
                 if(option.optionId.toString().equals(optionId)) {
                     if(!option.nextNodeId.equals(DialogTree.EXIT_NODE)) {

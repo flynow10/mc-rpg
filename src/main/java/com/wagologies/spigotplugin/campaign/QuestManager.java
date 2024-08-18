@@ -32,7 +32,7 @@ public class QuestManager implements Listener {
         } else {
             questBar.setColor(BarColor.RED);
         }
-        questBar.setTitle(currentQuest.getTitle());
+        questBar.setTitle(ChatColor.YELLOW + currentQuest.getTitle());
         questBar.setVisible(true);
     }
 
@@ -40,9 +40,22 @@ public class QuestManager implements Listener {
         return currentQuest;
     }
 
+    public void triggerNewQuest(Type newQuest) {
+        setCurrentQuest(newQuest);
+        for (RPGPlayer rpgPlayer : campaign.getOnlinePlayers()) {
+            Player player = rpgPlayer.getPlayer();
+            player.sendMessage("");
+            player.sendMessage(ChatColor.GREEN + "[New Quest]" + ChatColor.GRAY + ": " + ChatColor.YELLOW + newQuest.getTitle());
+            player.sendMessage("");
+        }
+    }
+
     public void setCurrentQuest(Type currentQuest) {
         this.currentQuest = currentQuest;
         updateQuestBar();
+        for (RPGPlayer onlinePlayer : campaign.getOnlinePlayers()) {
+            onlinePlayer.updateScoreboard();
+        }
     }
 
     @EventHandler
@@ -64,7 +77,9 @@ public class QuestManager implements Listener {
     public enum Type {
         TalkToBoatCaptain("Talk to the Boat Captain"),
         MeetMayor("Meet with the Mayor"),
-        PrepareForBandits("Prepare for the Bandits!"),
+        PrepareForBandits("Prepare for the fight"),
+        FightBandits("Fight the Bandits!"),
+        ReturnToCamper("Return to the Campers"),
         StormCastle("Storm the Castle"),
         ReachThroneRoom("Reach the Throne Room"),
         DestroyBoss("Destroy the Ice Princess " + ChatColor.AQUA + "Isadora Glacia");

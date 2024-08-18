@@ -289,7 +289,7 @@ public class RPGPlayer extends RPGEntity {
 
     public void updateScoreboard() {
         List<String> lines = new ArrayList<>(List.of(
-                "Welcome: " + ChatColor.AQUA + player.getName(),
+                "Welcome: " + ChatColor.AQUA + getName(),
                 " ",
                 "Coins: " + ChatColor.GOLD + coins,
                 " ",

@@ -1,7 +1,7 @@
 package com.wagologies.spigotplugin.command.commands;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
-import com.wagologies.spigotplugin.battle.Battle;
+import com.wagologies.spigotplugin.battle.BattleInfo;
 import com.wagologies.spigotplugin.battle.BattleManager;
 import com.wagologies.spigotplugin.command.PlayerCommand;
 import com.wagologies.spigotplugin.utils.StringHelper;
@@ -10,10 +10,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EnderSignal;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.StringUtil;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,8 +22,8 @@ public class BattleCommand extends PlayerCommand {
         super(plugin, "battle");
     }
 
-    private static final String[] SUB_COMMANDS = {"create", "addspawn", "list", "show", "start"};
-    private static final String[] REQUIRE_BATTLE = {"addspawn", "show", "start"};
+    private static final String[] SUB_COMMANDS = {"create", "addspawn", "list", "show"};
+    private static final String[] REQUIRE_BATTLE = {"addspawn", "show"};
 
     @Override
     public boolean playerExecutor(Player player, String s, String[] strings) {
@@ -37,14 +35,14 @@ public class BattleCommand extends PlayerCommand {
             player.sendMessage(ChatColor.RED + "Invalid sub command!");
             return true;
         }
-        Battle battle = null;
+        BattleInfo battleInfo = null;
         if(Arrays.stream(REQUIRE_BATTLE).anyMatch(cmd -> cmd.equals(strings[0]))) {
             if(strings.length < 2) {
                 player.sendMessage(ChatColor.RED + "Missing battle identifier!");
                 return true;
             }
             try {
-                battle = getBattleManager().getBattle(strings[1]);
+                battleInfo = getBattleManager().getBattle(strings[1]);
             } catch (RuntimeException e) {
                 player.sendMessage(ChatColor.RED + "That battle does not exist!");
                 return true;
@@ -57,19 +55,15 @@ public class BattleCommand extends PlayerCommand {
                 break;
             }
             case "addspawn": {
-                addSpawn(player, strings, battle);
+                addSpawn(player, strings, battleInfo);
                 break;
             }
             case "show": {
-                showSpawns(player, strings, battle);
+                showSpawns(player, strings, battleInfo);
                 break;
             }
             case "list": {
                 list(player, strings);
-                break;
-            }
-            case "start": {
-                start(player, strings, battle);
                 break;
             }
             default: {
@@ -81,9 +75,9 @@ public class BattleCommand extends PlayerCommand {
     public void list(Player player, String[] strings) {
         List<String> output = new ArrayList<>();
         output.add(ChatColor.GRAY + "==== Battles ====");
-        List<Battle> battles = getBattleManager().getBattles();
-        for(Battle battle : battles) {
-            output.add(ChatColor.GREEN + battle.getName() + ChatColor.GRAY + ": \"" + battle.getBattleId() + "\"; " + ChatColor.YELLOW + battle.getSpawnLocations().size() + " locations");
+        List<BattleInfo> battleInfos = getBattleManager().getBattles();
+        for(BattleInfo battleInfo : battleInfos) {
+            output.add(ChatColor.GREEN + battleInfo.getName() + ChatColor.GRAY + ": \"" + battleInfo.getBattleId() + "\"; " + ChatColor.YELLOW + battleInfo.getSpawnLocations().size() + " locations");
         }
         for (String line : output) {
             player.sendMessage(line);
@@ -101,22 +95,17 @@ public class BattleCommand extends PlayerCommand {
         player.sendMessage(ChatColor.GREEN + "Successfully created a new battle!");
     }
 
-    public void addSpawn(Player player, String[] strings, Battle battle) {
+    public void addSpawn(Player player, String[] strings, BattleInfo battleInfo) {
         Location loc = player.getLocation();
-        battle.addSpawnLocation(loc);
-        player.sendMessage(ChatColor.GREEN + "Added new spawn location to " + ChatColor.YELLOW + battle.getName() + ChatColor.GREEN + " at " + StringHelper.locationToString(loc));
+        battleInfo.addSpawnLocation(loc);
+        player.sendMessage(ChatColor.GREEN + "Added new spawn location to " + ChatColor.YELLOW + battleInfo.getName() + ChatColor.GREEN + " at " + StringHelper.locationToString(loc));
     }
 
-    public void start(Player player, String[] strings, Battle battle) {
-        battle.start();
-        player.sendMessage(ChatColor.GREEN + "Successfully started battle " + battle.getName());
-    }
-
-    public void showSpawns(Player player, String[] strings, Battle battle) {
-        List<Battle.SpawnLocation> spawnLocations = battle.getSpawnLocations();
+    public void showSpawns(Player player, String[] strings, BattleInfo battleInfo) {
+        List<BattleInfo.SpawnLocation> spawnLocations = battleInfo.getSpawnLocations();
         List<EnderSignal> signals = new ArrayList<>();
-        for (Battle.SpawnLocation spawnLocation : spawnLocations) {
-            Location location = spawnLocation.getLocation();
+        for (BattleInfo.SpawnLocation spawnLocation : spawnLocations) {
+            Location location = spawnLocation.getLocation().toLocation(player.getWorld());
             World world = location.getWorld();
             if(world == null) {
                 world = Bukkit.getWorlds().getFirst();
@@ -145,8 +134,8 @@ public class BattleCommand extends PlayerCommand {
             StringUtil.copyPartialMatches(args[0], List.of(SUB_COMMANDS), completions);
         }
         if(args.length == 2 && Arrays.stream(REQUIRE_BATTLE).anyMatch(cmd -> cmd.equals(args[0]))) {
-            List<Battle> battles = getBattleManager().getBattles();
-            StringUtil.copyPartialMatches(args[1], battles.stream().map(Battle::getName).toList(), completions);
+            List<BattleInfo> battleInfos = getBattleManager().getBattles();
+            StringUtil.copyPartialMatches(args[1], battleInfos.stream().map(BattleInfo::getName).toList(), completions);
         }
         return completions;
     }

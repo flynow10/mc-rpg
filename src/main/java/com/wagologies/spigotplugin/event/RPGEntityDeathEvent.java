@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class RPGEntityDeathEvent extends RPGEntityEvent {
     public static final HandlerList handlerList = new HandlerList();
-    public final DamageSource damageSource;
+    private final DamageSource damageSource;
 
     public RPGEntityDeathEvent(@NotNull RPGEntity entity, @NotNull DamageSource damageSource) {
         super(entity);

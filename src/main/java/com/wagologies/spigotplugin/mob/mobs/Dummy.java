@@ -37,7 +37,7 @@ public class Dummy extends EntityMob {
 
     @Override
     public int getWeight() {
-        return 40;
+        return 4000;
     }
 
     @Override

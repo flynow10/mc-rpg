@@ -1,7 +1,7 @@
 package com.wagologies.spigotplugin;
 
 import com.samjakob.spigui.SpiGUI;
-import com.wagologies.spigotplugin.battle.Battle;
+import com.wagologies.spigotplugin.battle.BattleInfo;
 import com.wagologies.spigotplugin.battle.BattleManager;
 import com.wagologies.spigotplugin.campaign.Campaign;
 import com.wagologies.spigotplugin.campaign.CampaignManager;
@@ -40,15 +40,15 @@ public class SpigotPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         getLogger().info("onEnable is called!");
-        Battle.RegisterConfiguration(this);
+        BattleInfo.RegisterConfiguration(this);
         Campaign.RegisterConfiguration(this);
         npcRegistry = CitizensAPI.createAnonymousNPCRegistry(new MemoryNPCDataStore());
+        battleManager = new BattleManager(this);
         campaignManager = new CampaignManager(this);
         lobbyManager = new LobbyManager(this);
         dungeonManager = new DungeonManager(this);
         playerManager = new PlayerManager(this);
         entityManager = new EntityManager(this);
-        battleManager = new BattleManager(this);
         itemManager = new ItemManager(this);
         spellManager = new SpellManager(this);
         actionBar = new ActionBar(this);

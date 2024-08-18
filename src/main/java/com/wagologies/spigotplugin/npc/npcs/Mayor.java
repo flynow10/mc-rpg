@@ -69,7 +69,7 @@ public class Mayor extends NPC {
                                 new Conversation.Speak("We would greatly appreciate any assistance you can give."),
                                 new Conversation.Speak("Alas, I fear we won't be able to compensate you for your work."),
                                 new Conversation.Speak("If you can free our town from the attacks of the castle, we will give you anything in our power to give."),
-                                new Conversation.CustomRunnable((rpgPlayers, npc, conversation) -> this.getCampaign().getQuestManager().setCurrentQuest(QuestManager.Type.StormCastle))
+                                new Conversation.CustomRunnable((rpgPlayers, npc, conversation) -> this.getCampaign().getQuestManager().triggerNewQuest(QuestManager.Type.StormCastle))
                         )
                 )
         );

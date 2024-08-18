@@ -6,6 +6,7 @@ import com.wagologies.spigotplugin.campaign.QuestManager;
 import com.wagologies.spigotplugin.campaign.triggers.BoxTrigger;
 import com.wagologies.spigotplugin.event.player.RPGClickNPCEvent;
 import com.wagologies.spigotplugin.npc.Conversation;
+import com.wagologies.spigotplugin.npc.DialogTree;
 import com.wagologies.spigotplugin.npc.NPC;
 import com.wagologies.spigotplugin.player.RPGPlayer;
 import net.citizensnpcs.trait.SkinTrait;
@@ -21,6 +22,7 @@ public class FemaleCamper extends NPC {
     public boolean nameIsKnown = false;
     public boolean hasPlayedIntro = false;
     public boolean hasPlayedAskForHelp = false;
+    public boolean hasConfirmedFight = false;
     public Conversation intro = new Conversation(
             new Conversation.PlayerLookAtNPC(),
             new Conversation.Speak("Hey there!", 0),
@@ -40,8 +42,12 @@ public class FemaleCamper extends NPC {
             new Conversation.Speak("If you can help us get our money back, we'd be happy to give you some of the items we've been collecting."),
             new Conversation.CustomRunnable((players, npc, conversation) -> {
                 hasPlayedAskForHelp = true;
-                this.getCampaign().getQuestManager().setCurrentQuest(QuestManager.Type.PrepareForBandits);
+                this.getCampaign().getQuestManager().triggerNewQuest(QuestManager.Type.PrepareForBandits);
             })
+    );
+
+    public Conversation thankYou = new Conversation(
+            new Conversation.Speak("Thank you so much for helping us get our money back!")
     );
 
     public FemaleCamper(SpigotPlugin plugin, Campaign campaign) {
@@ -87,7 +93,27 @@ public class FemaleCamper extends NPC {
         }
         MaleCamper brother = getCampaign().getNpcs().stream().filter(npc -> npc instanceof MaleCamper).map(npc -> (MaleCamper)npc).findAny().orElseThrow();
         if(!brother.hasGoneToArena) {
-            speakToPlayer(event.getPlayer(), "Go talk to my brother! He'll show you where we've been training.", 1, 1);
+            speakToPlayer(event.getPlayer(), "Go talk to my brother! He'll show you where we've been training.");
+            return;
+        }
+        if(!hasConfirmedFight) {
+            new Conversation(
+                    new DialogTree(getPlugin(),
+                            new DialogTree.ConversationNode("intro", "is-ready",
+                                    new Conversation.Speak("Are you ready to face the bandits?")
+                            ),
+                            new DialogTree.ConversationNode("thank-you", DialogTree.EXIT_NODE,
+                                    new Conversation.Speak("Great! Just head up that path towards the village, and you're bound to find them."),
+                                    new Conversation.Speak("Thank you so much for you're help!")
+                            ),
+                            new DialogTree.YesNoNode("is-ready", "thank-you", DialogTree.EXIT_NODE, "Yes!", "Not yet...")
+                    ),
+                    new Conversation.CustomRunnable((players, npc, conversation) -> { hasConfirmedFight = true; getCampaign().getQuestManager().triggerNewQuest(QuestManager.Type.FightBandits); })
+            ).addPlayer(event.getRPGPlayer(), this, getPlugin());
+        }
+
+        if(getCampaign().hasCompletedBanditBattle()) {
+            thankYou.addPlayer(event.getRPGPlayer(), this, getPlugin());
         }
     }
 
@@ -97,6 +123,7 @@ public class FemaleCamper extends NPC {
         data.put("nameIsKnown", nameIsKnown);
         data.put("hasPlayedIntro", hasPlayedIntro);
         data.put("hasPlayedAskForHelp", hasPlayedAskForHelp);
+        data.put("hasConfirmedFight", hasConfirmedFight);
         return data;
     }
 
@@ -116,6 +143,9 @@ public class FemaleCamper extends NPC {
 
         if(data.containsKey("hasPlayedAskForHelp")) {
             hasPlayedAskForHelp = (boolean) data.get("hasPlayedAskForHelp");
+        }
+        if(data.containsKey("hasConfirmedFight")) {
+            hasConfirmedFight = (boolean) data.get("hasConfirmedFight");
         }
     }
 

@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
+import com.wagologies.spigotplugin.campaign.PointOfInterest;
 import com.wagologies.spigotplugin.entity.AbilityScores;
 import com.wagologies.spigotplugin.player.OfflinePlayer;
 import com.wagologies.spigotplugin.player.StarterKit;
@@ -253,7 +254,8 @@ public class CharacterCreator extends InventoryView implements Listener {
     }
 
     public OfflinePlayer createCharacter() {
-        return new OfflinePlayer(player.getUniqueId().toString(), name, createAbilityScores()).setLocation(campaign.getWorld().getSpawnLocation()).setStarterKit(this.starterKit);
+        return new OfflinePlayer(player.getUniqueId().toString(), name, createAbilityScores()).setLocation(
+                PointOfInterest.NEW_CAMPAIGN.toLocation(campaign.getWorld())).setStarterKit(this.starterKit);
     }
 
     public Campaign getCampaign() {

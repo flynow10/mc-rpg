@@ -1,24 +1,13 @@
 package com.wagologies.spigotplugin.command.commands;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
-import com.wagologies.spigotplugin.battle.Battle;
-import com.wagologies.spigotplugin.command.PlayerCommand;
 import com.wagologies.spigotplugin.command.SubCommands;
 import com.wagologies.spigotplugin.utils.WorldHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.WorldInfo;
-import org.bukkit.util.StringUtil;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 
 public class WorldCommand extends SubCommands {
     private static final String[] SUB_COMMANDS = {"tp", "load", "create", "list"};
