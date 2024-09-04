@@ -14,6 +14,7 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class MagicMissile extends BaseSpell {
     private static final int BOLTS = 3;
@@ -57,6 +58,7 @@ public class MagicMissile extends BaseSpell {
         private Vector acceleration = new Vector(0,0,0);
         private RPGEntity target;
         private boolean isDestroyed = false;
+        private final Random damageRandomizer = new Random();
         public Bolt(MagicMissile spell, Location position, Vector velocity) {
             this.spell = spell;
             this.position = position;
@@ -142,7 +144,8 @@ public class MagicMissile extends BaseSpell {
                 BoundingBox boundingBox = target.getBoundingBox();
                 if(boundingBox.contains(this.position.toVector()) || boundingBox.contains(oldPosition.add(this.position).multiply(0.5).toVector())) {
                     spell.getSpellWorld().spawnParticle(Particle.EXPLOSION_LARGE, position, 1);
-                    target.damage(new DamageSource(DamageSource.DamageType.BLUNT, true), 20);
+                    int damage = damageRandomizer.nextInt(5, 11);
+                    target.damage(new DamageSource(DamageSource.DamageType.BLUNT, true), damage);
                     destroy();
                 }
             }

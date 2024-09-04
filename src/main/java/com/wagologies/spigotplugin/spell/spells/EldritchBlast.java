@@ -12,12 +12,14 @@ import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import java.util.Collection;
+import java.util.Random;
 
 public class EldritchBlast extends BaseSpell {
     // Speed in blocks per tick
     private static final float BoltSpeed = 1.5f;
     private final Vector direction;
     private final Vector position;
+    private final Random damageRandomizer = new Random();
     public EldritchBlast(SpellManager spellManager, RPGEntity rpgEntity) {
         super(spellManager, rpgEntity);
         Location eyeLine = rpgEntity.getEyeLocation();
@@ -47,7 +49,10 @@ public class EldritchBlast extends BaseSpell {
                 if(!event.isCancelled()) {
                     RPGEntity rpgEntity = findEntity(entity);
                     if(rpgEntity != null) {
-                        onHitEntity(rpgEntity);
+                        boolean canHit = onHitEntity(rpgEntity);
+                        if(!canHit) {
+                            return;
+                        }
                     }
                 }
             }
@@ -55,12 +60,17 @@ public class EldritchBlast extends BaseSpell {
         }
     }
 
-    public void onHitEntity(RPGEntity rpgEntity) {
-        Entity entity = rpgEntity.getMainEntity();
+    public boolean onHitEntity(RPGEntity rpgEntity) {
+        if(!spellCaster.canTarget(rpgEntity)) {
+            return false;
+        }
         Vector direction = this.getDirection().clone().normalize();
+        Entity entity = rpgEntity.getMainEntity();
         direction.setY(0.4);
         entity.setVelocity(direction);
-        rpgEntity.damage(new DamageSource(DamageSource.DamageType.FORCE, true, spellCaster, getPosition().toLocation(getSpellWorld())), 90);
+        int damage = damageRandomizer.nextInt(5,16);
+        rpgEntity.damage(new DamageSource(DamageSource.DamageType.FORCE, true, spellCaster, getPosition().toLocation(getSpellWorld())), damage);
+        return true;
     }
 
     @Override

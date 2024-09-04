@@ -25,11 +25,11 @@ public class OfflinePlayer implements ConfigurationSerializable {
     private StarterKit starterKit;
 
     public OfflinePlayer(String playerId, String name, AbilityScores abilityScores) {
-        this(StringHelper.nanoId(), playerId, name, abilityScores, SerializeInventory.itemStackArrayToBase64(new ItemStack[41]), 100);
+        this(StringHelper.nanoId(), playerId, name, abilityScores, SerializeInventory.itemStackArrayToBase64(new ItemStack[41]), 25);
     }
 
     public OfflinePlayer(String playerId, String name, AbilityScores abilityScores, String inventoryString) {
-        this(StringHelper.nanoId(), playerId, name, abilityScores, inventoryString, 100);
+        this(StringHelper.nanoId(), playerId, name, abilityScores, inventoryString, 25);
     }
 
     public OfflinePlayer(String id, String playerId, String name, AbilityScores abilityScores, String inventoryString, int coins) {
