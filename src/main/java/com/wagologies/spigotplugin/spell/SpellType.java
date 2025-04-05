@@ -15,7 +15,7 @@ public enum SpellType {
     GustOfWind("Gust of Wind", new SpellLine[]{ SpellLine.RIGHT }, GustOfWind.class, 28),
     AuraOfVitality("Aura of Vitality", new SpellLine[]{SpellLine.DOWN, SpellLine.LEFT, SpellLine.UP}, AuraOfVitality.class, 65),
     MagicMissile("Magic Missile", new SpellLine[] {SpellLine.UP, SpellLine.DOWN}, MagicMissile.class, 42),
-    MoldEarth("Mold Earth", new SpellLine[] {SpellLine.UP}, MoldEarth.class, 54);
+    MoldEarth("Wall of Stone", new SpellLine[] {SpellLine.UP}, MoldEarth.class, 54);
 
     private final String name;
     private final List<SpellLine> incantation;

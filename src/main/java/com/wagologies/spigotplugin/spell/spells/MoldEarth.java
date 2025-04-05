@@ -33,6 +33,13 @@ public class MoldEarth extends BaseSpell {
             Material.SNOW_BLOCK,
             Material.OBSIDIAN,
             Material.CRYING_OBSIDIAN,
+            Material.WHITE_WOOL,
+            Material.WHITE_CONCRETE,
+            Material.WHITE_CONCRETE_POWDER,
+            Material.ICE,
+            Material.PACKED_ICE,
+            Material.BLUE_ICE,
+
     };
     public static final Material[] NON_BLOCKING_MATERIALS = {
             Material.SHORT_GRASS,
@@ -128,9 +135,10 @@ public class MoldEarth extends BaseSpell {
                     continue;
 
                 for (int y = 1; y >= -MoldEarth.OUTER_RADIUS; y--) {
-                    Block block = world.getBlockAt(location.getBlockX() + x, location.getBlockY() + y,
-                            location.getBlockZ() + z);
+                    Location blockLocation = location.clone().add(x, y, z);
+                    Block block = world.getBlockAt(blockLocation);
                     if (block.isEmpty()) continue;
+                    if(!world.getBlockAt(blockLocation.add(0, 1, 0)).isEmpty()) break;
                     if (Arrays.stream(NON_BLOCKING_MATERIALS).anyMatch(type -> type == block.getType())) continue;
                     if (Arrays.stream(MOLDABLE_MATERIALS).anyMatch(type -> type == block.getType())) {
                         blocks.add(block);
