@@ -30,12 +30,15 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class RPGPlayer extends RPGEntity {
@@ -51,6 +54,7 @@ public class RPGPlayer extends RPGEntity {
     private boolean isInArena = false;
     private boolean isInDungeon = false;
     private boolean isInBattle = false;
+    private List<SpellType> knownSpells = new ArrayList<>();
     private SternalBoard scoreboard;
 
     public RPGPlayer(Player player, SpigotPlugin plugin, Campaign campaign) {
@@ -140,7 +144,8 @@ public class RPGPlayer extends RPGEntity {
                 .setAbilityScores(getAbilityScores())
                 .setLocation(getSaveLocation())
                 .setStarterKit(starterKit)
-                .setCoins(coins);
+                .setCoins(coins)
+                .setKnownSpells(this.knownSpells.toArray(new SpellType[0]));
     }
 
     @Override
@@ -223,7 +228,7 @@ public class RPGPlayer extends RPGEntity {
                 Wand wand = (Wand) RPGItem.ConvertToCustomItem(plugin, holdingItem);
                 assert wand != null;
                 SpellType spellType = SpellType.fromLines(spellLines);
-                boolean success = spellType != null;
+                boolean success = spellType != null && this.knownSpells.contains(spellType);
                 List<Location> castingPoints = spellCast.getCastingPoints();
                 Particle.DustOptions dustOptions = new Particle.DustOptions(success ? Color.fromRGB(0x00aa14) : Color.fromRGB(0xe02626), 1.0F);
                 for (Location castingPoint : castingPoints) {
@@ -274,6 +279,7 @@ public class RPGPlayer extends RPGEntity {
         this.setAbilityScores(loadedScores.getStrength(), loadedScores.getDexterity(), loadedScores.getConstitution(), loadedScores.getIntelligence(), loadedScores.getWisdom(), loadedScores.getCharisma());
         this.starterKit = character.getStarterKit();
         this.coins = character.getCoins();
+        this.knownSpells = Arrays.stream(character.getKnownSpells()).toList();
         player.getInventory().setContents(character.getInventoryContents());
         player.setDisplayName(character.getName());
         player.setPlayerListName(character.getName());
@@ -283,7 +289,7 @@ public class RPGPlayer extends RPGEntity {
 
     private void setupScoreboard() {
         scoreboard = new SternalBoard(this.player);
-        scoreboard.updateTitle("Unnamed RPG");
+        scoreboard.updateTitle("Avalan Quest");
         updateScoreboard();
     }
 
@@ -411,6 +417,49 @@ public class RPGPlayer extends RPGEntity {
         return armorSet;
     }
 
+    public void getSpellBook() {
+        ItemStack bookStack = new ItemStack(Material.WRITTEN_BOOK);
+        BookMeta bookMeta = (BookMeta) bookStack.getItemMeta();
+        assert bookMeta != null;
+        List<String> spellPages = new ArrayList<>();
+        for (SpellType knownSpell : getKnownSpells()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(ChatColor.LIGHT_PURPLE)
+                    .append(ChatColor.BOLD)
+                    .append(knownSpell.getName())
+                    .append(ChatColor.RESET)
+                    .append("\n\n")
+                    .append(ChatColor.BLUE)
+                    .append("Mana Cost: ")
+                    .append(ChatColor.BOLD)
+                    .append(knownSpell.getManaCost())
+                    .append("\n")
+                    .append(ChatColor.BOLD)
+                    .append(ChatColor.DARK_GRAY)
+                    .append("Description:\n")
+                    .append(ChatColor.RESET)
+                    .append(ChatColor.GRAY)
+                    .append(knownSpell.getDescription())
+                    .append(ChatColor.RESET)
+                    .append(ChatColor.DARK_GREEN)
+                    .append(ChatColor.BOLD)
+                    .append("\nIncantation:\n")
+                    .append(ChatColor.RESET);
+            List<SpellCast.SpellLine> spellLines = knownSpell.getIncantation();
+            for (SpellCast.SpellLine spellLine : spellLines) {
+                sb.append(spellLine.getColor())
+                        .append(spellLine.getLineName()).append(", ");
+            }
+            sb.delete(sb.length() - 2, sb.length());
+            spellPages.add(sb.toString());
+        }
+        bookMeta.setPages(spellPages);
+        bookMeta.setTitle(ChatColor.LIGHT_PURPLE + "Spell Book");
+        bookMeta.setAuthor(getName());
+        bookStack.setItemMeta(bookMeta);
+        player.getInventory().addItem(bookStack);
+    }
+
     @Override
     public String getName() {
         return player.getDisplayName();
@@ -467,5 +516,9 @@ public class RPGPlayer extends RPGEntity {
             return true;
         }
         return false;
+    }
+
+    public List<SpellType> getKnownSpells() {
+        return this.knownSpells;
     }
 }

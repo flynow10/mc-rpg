@@ -1,6 +1,7 @@
 package com.wagologies.spigotplugin.player;
 
 import com.wagologies.spigotplugin.entity.AbilityScores;
+import com.wagologies.spigotplugin.spell.SpellType;
 import com.wagologies.spigotplugin.utils.SerializeInventory;
 import com.wagologies.spigotplugin.utils.StringHelper;
 import org.bukkit.Location;
@@ -9,6 +10,7 @@ import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -23,22 +25,24 @@ public class OfflinePlayer implements ConfigurationSerializable {
     private String inventoryString;
     private Location location;
     private StarterKit starterKit;
+    private SpellType[] knownSpells;
 
     public OfflinePlayer(String playerId, String name, AbilityScores abilityScores) {
-        this(StringHelper.nanoId(), playerId, name, abilityScores, SerializeInventory.itemStackArrayToBase64(new ItemStack[41]), 25);
+        this(StringHelper.nanoId(), playerId, name, abilityScores, SerializeInventory.itemStackArrayToBase64(new ItemStack[41]), 25, new SpellType[0]);
     }
 
     public OfflinePlayer(String playerId, String name, AbilityScores abilityScores, String inventoryString) {
-        this(StringHelper.nanoId(), playerId, name, abilityScores, inventoryString, 25);
+        this(StringHelper.nanoId(), playerId, name, abilityScores, inventoryString, 25, new SpellType[0]);
     }
 
-    public OfflinePlayer(String id, String playerId, String name, AbilityScores abilityScores, String inventoryString, int coins) {
+    public OfflinePlayer(String id, String playerId, String name, AbilityScores abilityScores, String inventoryString, int coins, SpellType[] knownSpells) {
         this.id = id;
         this.playerId = playerId;
         this.name = name;
         this.abilityScores = abilityScores;
         this.coins = coins;
         this.inventoryString = inventoryString;
+        this.knownSpells = knownSpells;
     }
 
     public String getId() {
@@ -110,6 +114,15 @@ public class OfflinePlayer implements ConfigurationSerializable {
         return this;
     }
 
+    public SpellType[] getKnownSpells() {
+        return this.knownSpells;
+    }
+
+    public OfflinePlayer setKnownSpells(SpellType[] knownSpells) {
+        this.knownSpells = knownSpells;
+        return this;
+    }
+
     @Override
     public Map<String, Object> serialize() {
         LinkedHashMap<String, Object> result = new LinkedHashMap<>();
@@ -126,6 +139,7 @@ public class OfflinePlayer implements ConfigurationSerializable {
         result.put("inventory", inventoryString);
         result.put("coins", coins);
         result.put("location", location.serialize());
+        result.put("knownSpells", Arrays.stream(knownSpells).map(SpellType::name).toArray());
         return result;
     }
 
@@ -159,6 +173,16 @@ public class OfflinePlayer implements ConfigurationSerializable {
             throw new IllegalStateException("Could not deserialize coins of offline player!");
         }
 
+        ArrayList<String> knownSpellNames = (ArrayList<String>) args.get("knownSpells");
+        if(knownSpellNames == null) {
+            throw new IllegalStateException("Could not deserialize known spells of offline player!");
+        }
+
+        SpellType[] knownSpells = new SpellType[knownSpellNames.size()];
+        for (int i = 0; i < knownSpellNames.size(); i++) {
+            knownSpells[i] = SpellType.valueOf(knownSpellNames.get(i));
+        }
+
         AbilityScores abilityScores = new AbilityScores();
         abilityScores.setStrength((Integer) args.get("strength"));
         abilityScores.setDexterity((Integer) args.get("dexterity"));
@@ -166,7 +190,8 @@ public class OfflinePlayer implements ConfigurationSerializable {
         abilityScores.setIntelligence((Integer) args.get("intelligence"));
         abilityScores.setWisdom((Integer) args.get("wisdom"));
         abilityScores.setCharisma((Integer) args.get("charisma"));
-        OfflinePlayer loadedCharacter = new OfflinePlayer(id, playerId, name, abilityScores, inventory, coins);
+        OfflinePlayer loadedCharacter = new OfflinePlayer(id, playerId, name, abilityScores, inventory, coins,
+                knownSpells);
         loadedCharacter.setStarterKit(starterKit);
         loadedCharacter.setLocation(Location.deserialize((Map<String, Object>) args.get("location")));
         return loadedCharacter;

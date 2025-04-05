@@ -4,6 +4,7 @@ import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.command.PlayerCommand;
 import com.wagologies.spigotplugin.entity.AbilityScores;
 import com.wagologies.spigotplugin.player.RPGPlayer;
+import com.wagologies.spigotplugin.spell.SpellType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -53,6 +54,11 @@ public class StatsCommands extends PlayerCommand {
             int modifier = abilityScores.getModifier(score);
             name = name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
             sender.sendMessage(" " + score.getColor() + ChatColor.BOLD + name + ": " + ChatColor.RESET + ChatColor.WHITE + abilityScores.getScore(score) + ChatColor.GRAY + " (" + (modifier > 0 ? ChatColor.GREEN + "+" : ChatColor.RED) + modifier + ChatColor.GRAY + ")");
+        }
+        sender.sendMessage("");
+        sender.sendMessage(ChatColor.GREEN + "Known spells");
+        for (SpellType spell : player.getKnownSpells()) {
+            sender.sendMessage(" " + ChatColor.LIGHT_PURPLE + spell.getName());
         }
         sender.sendMessage("");
     }

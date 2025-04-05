@@ -2,6 +2,7 @@
 package com.wagologies.spigotplugin.spell;
 
 import com.wagologies.spigotplugin.player.RPGPlayer;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
@@ -144,22 +145,32 @@ public class SpellCast {
     }
 
     public enum SpellLine {
-        UP(new int[]{0, 1}),
-        DOWN(new int[]{0, -1}),
-        LEFT(new int[]{-1, 0}),
-        RIGHT(new int[]{1, 0}),
-        UP_LEFT(new int[]{-1, 1}),
-        UP_RIGHT(new int[]{1, 1}),
-        DOWN_LEFT(new int[]{-1, -1}),
-        DOWN_RIGHT(new int[]{1, -1});
+        UP(new int[]{0, 1}, ChatColor.RED),
+        DOWN(new int[]{0, -1}, ChatColor.GOLD),
+        LEFT(new int[]{-1, 0}, ChatColor.DARK_RED),
+        RIGHT(new int[]{1, 0}, ChatColor.GREEN),
+        UP_LEFT(new int[]{-1, 1}, ChatColor.DARK_GREEN),
+        UP_RIGHT(new int[]{1, 1}, ChatColor.DARK_BLUE),
+        DOWN_LEFT(new int[]{-1, -1}, ChatColor.BLUE),
+        DOWN_RIGHT(new int[]{1, -1}, ChatColor.DARK_PURPLE);
 
         private final int[] directionVec;
-        SpellLine(int[] directionVec) {
+        private final ChatColor color;
+        SpellLine(int[] directionVec, ChatColor color) {
             this.directionVec = directionVec;
+            this.color = color;
         }
 
         public int[] getDirectionVec() {
             return directionVec;
+        }
+
+        public ChatColor getColor() {
+            return this.color;
+        }
+
+        public String getLineName() {
+            return this.name().replaceAll("_", "-");
         }
 
         public static SpellLine getSpellFromDirection(int[] direction) {
