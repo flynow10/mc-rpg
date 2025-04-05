@@ -31,7 +31,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
@@ -40,6 +39,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RPGPlayer extends RPGEntity {
     private final Player player;
@@ -227,13 +227,18 @@ public class RPGPlayer extends RPGEntity {
             if (!spellLines.isEmpty() && RPGItem.GetItemType(holdingItem) == ItemType.WAND) {
                 Wand wand = (Wand) RPGItem.ConvertToCustomItem(plugin, holdingItem);
                 assert wand != null;
+
                 SpellType spellType = SpellType.fromLines(spellLines);
+
                 boolean success = spellType != null && this.knownSpells.contains(spellType);
+
                 List<Location> castingPoints = spellCast.getCastingPoints();
                 Particle.DustOptions dustOptions = new Particle.DustOptions(success ? Color.fromRGB(0x00aa14) : Color.fromRGB(0xe02626), 1.0F);
+
                 for (Location castingPoint : castingPoints) {
                     player.getWorld().spawnParticle(Particle.REDSTONE, castingPoint, 1, dustOptions);
                 }
+
                 if (success) {
                     wand.setLoadedSpell(spellType);
                     player.playSound(player, Sound.ENTITY_BREEZE_INHALE, 10, 1);
@@ -273,13 +278,30 @@ public class RPGPlayer extends RPGEntity {
         sendSpellActionBar(spellType);
         wand.setLoadedSpell(null);
     }
+    public void updateSpellBook() {
+        updateSpellBook(false);
+    }
+
+    public void updateSpellBook(boolean giveIfAbsent) {
+        PlayerInventory inventory = player.getInventory();
+        for (int i = 0; i < inventory.getSize(); i++) {
+            ItemStack itemStack = inventory.getItem(i);
+            if(itemStack != null && itemStack.getType().equals(Material.WRITTEN_BOOK)) {
+                inventory.setItem(i, getSpellBookItem());
+                return;
+            }
+        }
+        if(giveIfAbsent) {
+            inventory.addItem(getSpellBookItem());
+        }
+    }
 
     public void loadFromOffline(OfflinePlayer character) {
         AbilityScores loadedScores = character.getAbilityScores();
         this.setAbilityScores(loadedScores.getStrength(), loadedScores.getDexterity(), loadedScores.getConstitution(), loadedScores.getIntelligence(), loadedScores.getWisdom(), loadedScores.getCharisma());
         this.starterKit = character.getStarterKit();
         this.coins = character.getCoins();
-        this.knownSpells = Arrays.stream(character.getKnownSpells()).toList();
+        this.knownSpells = Arrays.stream(character.getKnownSpells()).collect(Collectors.toList());
         player.getInventory().setContents(character.getInventoryContents());
         player.setDisplayName(character.getName());
         player.setPlayerListName(character.getName());
@@ -417,11 +439,14 @@ public class RPGPlayer extends RPGEntity {
         return armorSet;
     }
 
-    public void getSpellBook() {
+    public ItemStack getSpellBookItem() {
         ItemStack bookStack = new ItemStack(Material.WRITTEN_BOOK);
         BookMeta bookMeta = (BookMeta) bookStack.getItemMeta();
         assert bookMeta != null;
         List<String> spellPages = new ArrayList<>();
+        if(getKnownSpells().size() == 0) {
+            spellPages.add("Empty Spell Book");
+        }
         for (SpellType knownSpell : getKnownSpells()) {
             StringBuilder sb = new StringBuilder();
             sb.append(ChatColor.LIGHT_PURPLE)
@@ -457,7 +482,7 @@ public class RPGPlayer extends RPGEntity {
         bookMeta.setTitle(ChatColor.LIGHT_PURPLE + "Spell Book");
         bookMeta.setAuthor(getName());
         bookStack.setItemMeta(bookMeta);
-        player.getInventory().addItem(bookStack);
+        return bookStack;
     }
 
     @Override
@@ -520,5 +545,19 @@ public class RPGPlayer extends RPGEntity {
 
     public List<SpellType> getKnownSpells() {
         return this.knownSpells;
+    }
+
+    public void learnSpell(SpellType type) {
+        if(!knownSpells.contains(type)) {
+            knownSpells.add(type);
+            updateSpellBook();
+        }
+    }
+
+    public void unlearnSpell(SpellType type) {
+        if(knownSpells.contains(type)) {
+            knownSpells.remove(type);
+            updateSpellBook();
+        }
     }
 }

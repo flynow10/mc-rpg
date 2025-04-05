@@ -13,10 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MaleCamper extends NPC {
     private static final Vector CAMPSITE_LOCATION = new Vector (672.5, 84, 866.5);
@@ -93,6 +90,9 @@ public class MaleCamper extends NPC {
                             rpgPlayer.getPlayer()
                                     .getInventory()
                                     .addItem(starterItemBuilder.build(getPlugin()).getItemStack());
+                        }
+                        if(Objects.equals(starterKit.getName(), "Wizard")) {
+                            rpgPlayer.getPlayer().getInventory().addItem(rpgPlayer.getSpellBookItem());
                         }
                 }),
                 new Conversation.Speak("Go ahead and take your new gear for a spin in the the training arena."),

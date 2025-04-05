@@ -2,6 +2,7 @@
 package com.wagologies.spigotplugin.spell;
 
 import com.wagologies.spigotplugin.player.RPGPlayer;
+import com.wagologies.spigotplugin.utils.StringHelper;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -170,7 +171,7 @@ public class SpellCast {
         }
 
         public String getLineName() {
-            return this.name().replaceAll("_", "-");
+            return StringHelper.enumToHumanName(this);
         }
 
         public static SpellLine getSpellFromDirection(int[] direction) {
