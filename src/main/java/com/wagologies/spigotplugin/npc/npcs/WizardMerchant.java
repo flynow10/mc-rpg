@@ -2,9 +2,14 @@ package com.wagologies.spigotplugin.npc.npcs;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.campaign.Campaign;
+import com.wagologies.spigotplugin.item.ItemType;
+import com.wagologies.spigotplugin.item.RPGItemBuilder;
 import com.wagologies.spigotplugin.npc.Merchant;
+import com.wagologies.spigotplugin.spell.SpellType;
 import net.citizensnpcs.trait.SkinTrait;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 
 public class WizardMerchant extends Merchant {
     public WizardMerchant(SpigotPlugin plugin, Campaign campaign) {
@@ -14,7 +19,16 @@ public class WizardMerchant extends Merchant {
 
     @Override
     public ShopItem[] getShopItems() {
-        return new ShopItem[0];
+        return new ShopItem[] {
+                new ShopItem(
+                        new RPGItemBuilder(Material.PAPER)
+                                .customType(ItemType.SCROLL)
+                                .name(ChatColor.LIGHT_PURPLE.toString() + ChatColor.BOLD + ChatColor.ITALIC + "Scroll of Wind")
+                                .spellType(SpellType.GustOfWind)
+                                .build(this.getPlugin()),
+                        100
+                )
+        };
     }
 
     @Override

@@ -95,6 +95,9 @@ public class RPGItem {
             case ARMOR -> {
                 return new Armor(plugin, item);
             }
+            case SCROLL -> {
+                return new Scroll(plugin, item);
+            }
             default -> throw new IllegalStateException("Unexpected value: " + type);
         }
     }

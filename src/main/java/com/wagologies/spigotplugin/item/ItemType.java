@@ -5,5 +5,6 @@ public enum ItemType {
     MELEE_WEAPON,
     WAND,
     WAND_CORE,
-    ARMOR
+    ARMOR,
+    SCROLL
 }

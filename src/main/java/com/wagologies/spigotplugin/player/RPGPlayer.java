@@ -444,39 +444,12 @@ public class RPGPlayer extends RPGEntity {
         BookMeta bookMeta = (BookMeta) bookStack.getItemMeta();
         assert bookMeta != null;
         List<String> spellPages = new ArrayList<>();
-        if(getKnownSpells().size() == 0) {
+        if(getKnownSpells().isEmpty()) {
             spellPages.add("Empty Spell Book");
         }
         for (SpellType knownSpell : getKnownSpells()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(ChatColor.LIGHT_PURPLE)
-                    .append(ChatColor.BOLD)
-                    .append(knownSpell.getName())
-                    .append(ChatColor.RESET)
-                    .append("\n\n")
-                    .append(ChatColor.BLUE)
-                    .append("Mana Cost: ")
-                    .append(ChatColor.BOLD)
-                    .append(knownSpell.getManaCost())
-                    .append("\n")
-                    .append(ChatColor.BOLD)
-                    .append(ChatColor.DARK_GRAY)
-                    .append("Description:\n")
-                    .append(ChatColor.RESET)
-                    .append(ChatColor.GRAY)
-                    .append(knownSpell.getDescription())
-                    .append(ChatColor.RESET)
-                    .append(ChatColor.DARK_GREEN)
-                    .append(ChatColor.BOLD)
-                    .append("\nIncantation:\n")
-                    .append(ChatColor.RESET);
-            List<SpellCast.SpellLine> spellLines = knownSpell.getIncantation();
-            for (SpellCast.SpellLine spellLine : spellLines) {
-                sb.append(spellLine.getColor())
-                        .append(spellLine.getLineName()).append(", ");
-            }
-            sb.delete(sb.length() - 2, sb.length());
-            spellPages.add(sb.toString());
+            List<String> loreText = knownSpell.getLoreText(false);
+            spellPages.add(String.join("\n" + ChatColor.RESET, loreText));
         }
         bookMeta.setPages(spellPages);
         bookMeta.setTitle(ChatColor.LIGHT_PURPLE + "Spell Book");

@@ -5,11 +5,13 @@ import com.wagologies.spigotplugin.entity.RPGEntity;
 import com.wagologies.spigotplugin.event.player.RPGClickNPCEvent;
 import com.wagologies.spigotplugin.item.RPGItem;
 import com.wagologies.spigotplugin.item.ItemType;
+import com.wagologies.spigotplugin.item.Scroll;
 import com.wagologies.spigotplugin.item.Wand;
 import com.wagologies.spigotplugin.spell.SpellType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -65,14 +67,27 @@ public class PlayerListener implements Listener {
     public void onInteract(PlayerInteractEvent event) {
         if (event.getPlayer().equals(this.player.getPlayer())) {
             ItemStack itemInHand = event.getItem();
-            if (itemInHand != null && !itemInHand.getType().isAir() && RPGItem.GetItemType(itemInHand) == ItemType.WAND) {
-                Wand wand = (Wand) RPGItem.ConvertToCustomItem(plugin, itemInHand);
-                assert wand != null;
-                if (!wand.isSpellLoaded()) {
-                    return;
+            if (itemInHand != null && !itemInHand.getType().isAir()) {
+                ItemType itemType = RPGItem.GetItemType(itemInHand);
+                if(itemType == ItemType.WAND) {
+                    Wand wand = (Wand) RPGItem.ConvertToCustomItem(plugin, itemInHand);
+                    assert wand != null;
+                    if (!wand.isSpellLoaded()) {
+                        return;
+                    }
+                    SpellType spellType = wand.getLoadedSpell();
+                    player.castSpell(spellType, wand);
+                } else if(itemType == ItemType.SCROLL) {
+                    Scroll scroll = (Scroll) RPGItem.ConvertToCustomItem(plugin, itemInHand);
+                    assert scroll != null;
+                    SpellType spellType = scroll.getSpellType();
+                    player.learnSpell(spellType);
+                    player.updateSpellBook(true);
+                    Player bukkitPlayer = player.getPlayer();
+                    bukkitPlayer.sendMessage(ChatColor.RED + "The scroll disintegrates and you feel an understanding of the magic within");
+                    bukkitPlayer.getInventory().setItemInMainHand(null);
+                    bukkitPlayer.playSound(bukkitPlayer.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 1);
                 }
-                SpellType spellType = wand.getLoadedSpell();
-                player.castSpell(spellType, wand);
             }
         }
     }

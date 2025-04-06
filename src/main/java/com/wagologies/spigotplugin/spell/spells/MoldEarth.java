@@ -20,6 +20,7 @@ public class MoldEarth extends BaseSpell {
             Material.COARSE_DIRT,
             Material.ROOTED_DIRT,
             Material.GRASS_BLOCK,
+            Material.PODZOL,
             Material.STONE,
             Material.COBBLESTONE,
             Material.DIORITE,

@@ -60,7 +60,7 @@ public class SpellCommand extends SubCommands {
             }
             case "unlearn": {
                 rpgPlayer.unlearnSpell(type);
-                rpgPlayer.getPlayer().sendMessage(ChatColor.GREEN + "Removed spell " + type.getColoredName() + ChatColor.GREEN + " fromt " + ChatColor.AQUA + rpgPlayer.getName() + "'s" + ChatColor.GREEN + " spell book");
+                rpgPlayer.getPlayer().sendMessage(ChatColor.GREEN + "Removed spell " + type.getColoredName() + ChatColor.GREEN + " from " + ChatColor.AQUA + rpgPlayer.getName() + "'s" + ChatColor.GREEN + " spell book");
                 break;
             }
             case "spellbook": {

@@ -2,6 +2,7 @@ package com.wagologies.spigotplugin.item;
 
 import com.wagologies.spigotplugin.SpigotPlugin;
 import com.wagologies.spigotplugin.entity.DamageSource;
+import com.wagologies.spigotplugin.spell.SpellType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -28,6 +29,7 @@ public class RPGItemBuilder {
     private MeleeWeapon.AttackSpeed attackSpeed = MeleeWeapon.AttackSpeed.NORMAL;
     private int armorClass = 0;
     private int weight = -1;
+    private SpellType spellType = SpellType.AuraOfVitality;
 
     private final ItemStack stack;
 
@@ -249,6 +251,18 @@ public class RPGItemBuilder {
         return weight == -1 ? armorClass : weight;
     }
 
+    public RPGItemBuilder spellType(SpellType spellType) {
+        if(type != ItemType.SCROLL) {
+            Bukkit.getLogger().warning("Setting spell type of non spell!");
+        }
+        this.spellType = spellType;
+        return this;
+    }
+
+    public SpellType getSpellType() {
+        return this.spellType;
+    }
+
     public RPGItem build(SpigotPlugin plugin) {
         ItemStack itemStack = build();
         switch (type) {
@@ -281,6 +295,11 @@ public class RPGItemBuilder {
                     armor.setWeight(weight);
                 }
                 return armor;
+            }
+            case SCROLL -> {
+                Scroll scroll = new Scroll(plugin, itemStack);
+                scroll.setSpellType(this.spellType);
+                return scroll;
             }
 
             default -> throw new IllegalStateException("Unexpected value: " + type);
